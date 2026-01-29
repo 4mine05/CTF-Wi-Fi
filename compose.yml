@@ -1,0 +1,47 @@
+services:
+  db:
+    image: mariadb:11.4
+    container_name: ctf_db
+    environment:
+      MARIADB_DATABASE: ctf_jugadores
+      MARIADB_USER: user
+      MARIADB_PASSWORD: pass123
+      MARIADB_ROOT_PASSWORD: root123
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - ctf_net
+    # Check if the database is ready
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-uroot", "-proot123"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: ctf_web
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: ctf_jugadores
+      DB_USER: user
+      DB_PASS: pass123
+    volumes:
+      - ./web:/var/www/html:ro
+      - ./web/var:/var/www/html/var
+    ports:
+      - "8080:80"
+    networks:
+      - ctf_net
+
+networks:
+  ctf_net:
+
+volumes:
+  db_data:
