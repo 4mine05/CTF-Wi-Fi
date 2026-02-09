@@ -1,5 +1,5 @@
 # CTF-Wi-Fi
-## Dependencias Ubuntu 24.04
+## Dependencias Ubuntu desktop 25.10
 ### 1. Cliente MySQL 
 
 ```bash
