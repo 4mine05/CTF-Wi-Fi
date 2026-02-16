@@ -34,12 +34,12 @@ sudo apt install mysql-client-core-8.0 -y
     ```
   - **2.5 (Opcional) Ejecutar Docker sin sudo**
    ```bash
-    sudo usermod -aG docker $USER
+   sudo usermod -aG docker $USER
    ```
   *Es necesario cerrar sesión y volver a entrar para aplicar el cambio.*
 ### 3. Herramientas necessarias
   ```bash
-      sudo apt install iw hostapd dnsmasq -y
+  sudo apt install iw hostapd dnsmasq -y
   ```
 
    
