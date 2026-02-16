@@ -37,9 +37,9 @@ sudo apt install mysql-client-core-8.0 -y
     sudo usermod -aG docker $USER
    ```
   *Es necesario cerrar sesión y volver a entrar para aplicar el cambio.*
-### 3. Herramienta iw
+### 3. Herramientas necessarias
   ```bash
-      sudo apt install iw -y
+      sudo apt install iw hostapd dnsmasq -y
   ```
 
    
