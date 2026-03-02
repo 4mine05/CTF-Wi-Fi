@@ -34,7 +34,6 @@ services:
       DB_PASS: pass123
     volumes:
       - ./web:/var/www/html:ro
-      - ./web/var:/var/www/html/var
     ports:
       - "8080:80"
     networks:
