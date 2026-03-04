@@ -38,7 +38,7 @@ sudo apt update && sudo apt install mysql-client-core -y
   *Es necesario cerrar sesión y volver a entrar para aplicar el cambio.*
 ### 3. Herramientas necessarias
   ```bash
-  sudo apt install wpasupplicant isc-dhcp-client iproute2 iw wireless-tools hostapd dnsmasq -y
+  sudo apt install wpasupplicant isc-dhcp-client iproute2 iw wireless-tools reaver bully hostapd dnsmasq -y
   ```
 
    
