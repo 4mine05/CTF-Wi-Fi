@@ -1,50 +1,167 @@
-CREATE DATABASE IF NOT EXISTS ctf_jugadores;
-USE ctf_jugadores;
+CREATE DATABASE IF NOT EXISTS ctf_wifi
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS jugadores (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  usuario VARCHAR(50) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+USE ctf_wifi;
+
+-- =========================================
+-- CONFIGURACIÓN GENERAL
+-- =========================================
+CREATE TABLE app_config (
+    config_key VARCHAR(100) PRIMARY KEY,
+    config_value VARCHAR(255) NOT NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS niveles (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(100) NOT NULL,
-  descripcion TEXT,
-  flag_hash VARCHAR(255) NOT NULL,
-  orden_nivel INT NOT NULL,
-  activo TINYINT(1) DEFAULT 1
+INSERT INTO app_config (config_key, config_value) VALUES
+('max_players', '30'),
+('registration_open', '1'),
+('public_screen_enabled', '1');
+
+-- =========================================
+-- USUARIOS
+-- =========================================
+CREATE TABLE users (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    alias VARCHAR(32) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'player') NOT NULL DEFAULT 'player',
+    status ENUM('pending_review', 'waitlisted', 'approved', 'blocked', 'deleted')
+        NOT NULL DEFAULT 'pending_review',
+    approved_at DATETIME NULL,
+    blocked_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+    last_login_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_users_alias (alias)
 );
 
-CREATE TABLE IF NOT EXISTS progreso (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  jugador_id INT NOT NULL,
-  nivel_id INT NOT NULL,
-  completado TINYINT(1) DEFAULT 0,
-  fecha_completado DATETIME NULL,
-  UNIQUE (jugador_id, nivel_id),
-  FOREIGN KEY (jugador_id) REFERENCES jugadores(id),
-  FOREIGN KEY (nivel_id) REFERENCES niveles(id)
+-- =========================================
+-- CÓDIGOS DE INVITACIÓN
+-- =========================================
+CREATE TABLE invitation_codes (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(64) NOT NULL,
+    created_by_admin_id BIGINT UNSIGNED NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    max_uses INT UNSIGNED NOT NULL DEFAULT 1,
+    use_count INT UNSIGNED NOT NULL DEFAULT 0,
+    expires_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_invitation_codes_code (code),
+    CONSTRAINT fk_invitation_codes_admin
+        FOREIGN KEY (created_by_admin_id) REFERENCES users(id)
+        ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS intentos (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  jugador_id INT NOT NULL,
-  nivel_id INT NOT NULL,
-  respuesta_enviada VARCHAR(255) NOT NULL,
-  correcta TINYINT(1) DEFAULT 0,
-  fecha_intento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (jugador_id) REFERENCES jugadores(id),
-  FOREIGN KEY (nivel_id) REFERENCES niveles(id)
+-- =========================================
+-- USOS DE CÓDIGOS (TRAZABILIDAD)
+-- =========================================
+CREATE TABLE invitation_code_uses (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    invitation_code_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    used_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_invitation_code_use_user (user_id),
+    CONSTRAINT fk_invitation_code_uses_code
+        FOREIGN KEY (invitation_code_id) REFERENCES invitation_codes(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_invitation_code_uses_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS entornos (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  jugador_id INT NOT NULL,
-  nombre_contenedor VARCHAR(100),
-  puerto_ssh INT,
-  estado ENUM('pendiente','creado','activo','finalizado') DEFAULT 'pendiente',
-  creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (jugador_id) REFERENCES jugadores(id)
+-- =========================================
+-- LISTA DE ESPERA
+-- =========================================
+CREATE TABLE waitlist (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('waiting', 'promoted', 'removed') NOT NULL DEFAULT 'waiting',
+    promoted_at DATETIME NULL,
+    removed_at DATETIME NULL,
+    notes VARCHAR(255) NULL,
+    UNIQUE KEY uq_waitlist_user (user_id),
+    KEY idx_waitlist_status_joined (status, joined_at),
+    CONSTRAINT fk_waitlist_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================================
+-- ENTORNOS DE JUGADOR
+-- =========================================
+CREATE TABLE player_envs (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    env_status ENUM('not_created', 'pending', 'creating', 'created', 'active', 'finished', 'error')
+        NOT NULL DEFAULT 'not_created',
+    container_name VARCHAR(100) NULL,
+    ssh_host VARCHAR(255) NULL,
+    ssh_port INT UNSIGNED NULL,
+    container_username VARCHAR(64) NULL,
+
+    initial_password_enc VARBINARY(255) NULL,
+
+    provision_requested_at DATETIME NULL,
+    created_at DATETIME NULL,
+    activated_at DATETIME NULL,
+    finished_at DATETIME NULL,
+    last_sync_at DATETIME NULL,
+    error_message TEXT NULL,
+
+    UNIQUE KEY uq_player_envs_user (user_id),
+    UNIQUE KEY uq_player_envs_container_name (container_name),
+    UNIQUE KEY uq_player_envs_ssh_port (ssh_port),
+
+    CONSTRAINT fk_player_envs_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================================
+-- PUNTUACIONES / LEADERBOARD
+-- =========================================
+CREATE TABLE scores (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    points INT NOT NULL DEFAULT 0,
+    levels_completed INT UNSIGNED NOT NULL DEFAULT 0,
+    valid_flags INT UNSIGNED NOT NULL DEFAULT 0,
+    failed_attempts INT UNSIGNED NOT NULL DEFAULT 0,
+    hints_used INT UNSIGNED NOT NULL DEFAULT 0,
+    total_time_seconds INT UNSIGNED NOT NULL DEFAULT 0,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_scores_user (user_id),
+    KEY idx_scores_ranking (points DESC, levels_completed DESC, total_time_seconds ASC),
+    CONSTRAINT fk_scores_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================================
+-- LOG DE ACCIONES DEL ADMIN
+-- =========================================
+CREATE TABLE admin_actions (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    admin_user_id BIGINT UNSIGNED NOT NULL,
+    target_user_id BIGINT UNSIGNED NULL,
+    action_type VARCHAR(50) NOT NULL,
+    details TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_admin_actions_admin (admin_user_id),
+    KEY idx_admin_actions_target (target_user_id),
+    CONSTRAINT fk_admin_actions_admin
+        FOREIGN KEY (admin_user_id) REFERENCES users(id)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_admin_actions_target
+        FOREIGN KEY (target_user_id) REFERENCES users(id)
+        ON DELETE SET NULL ON UPDATE CASCADE
 );
