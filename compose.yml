@@ -3,7 +3,7 @@ services:
     image: mariadb:11.4
     container_name: ctf_db
     environment:
-      MARIADB_DATABASE: ctf_jugadores
+      MARIADB_DATABASE: ctf_wifi
       MARIADB_USER: user
       MARIADB_PASSWORD: pass123
       MARIADB_ROOT_PASSWORD: root123
