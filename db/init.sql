@@ -165,3 +165,20 @@ CREATE TABLE admin_actions (
         FOREIGN KEY (target_user_id) REFERENCES users(id)
         ON DELETE SET NULL ON UPDATE CASCADE
 );
+
+-- =========================================
+-- CREAR USUARIO ADMINISTRADOR
+-- =========================================
+INSERT INTO users (alias, password_hash, role, status, approved_at)
+VALUES (
+  'admin', -- Usuario/Alias
+  '$2y$12$bAFgGglV3m1UPbbkioGNreC6LzvrgAJlTsYjUkn8Y4nA/hb7prIIK',  -- Contrasena: admin1234
+  'admin',
+  'approved',
+  NOW()
+);
+-- =========================================
+-- Código de invitación para usuarios nuevos
+-- =========================================
+INSERT INTO invitation_codes (code, created_by_admin_id, is_active, max_uses, use_count)
+VALUES ('CLASE2026', 1, 1, 30, 0);
