@@ -45,37 +45,9 @@ CREATE TABLE users (
 CREATE TABLE invitation_codes (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     code VARCHAR(64) NOT NULL,
-    created_by_admin_id BIGINT UNSIGNED NOT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
-    max_uses INT UNSIGNED NOT NULL DEFAULT 1,
-    use_count INT UNSIGNED NOT NULL DEFAULT 0,
-    expires_at DATETIME NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_invitation_codes_code (code),
-    CONSTRAINT fk_invitation_codes_admin
-        FOREIGN KEY (created_by_admin_id) REFERENCES users(id)
-        ON DELETE RESTRICT ON UPDATE CASCADE
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
--- =========================================
--- USOS DE CÓDIGOS (TRAZABILIDAD)
--- =========================================
-CREATE TABLE invitation_code_uses (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    invitation_code_id BIGINT UNSIGNED NOT NULL,
-    user_id BIGINT UNSIGNED NOT NULL,
-    used_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_invitation_code_use_user (user_id),
-    CONSTRAINT fk_invitation_code_uses_code
-        FOREIGN KEY (invitation_code_id) REFERENCES invitation_codes(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_invitation_code_uses_user
-        FOREIGN KEY (user_id) REFERENCES users(id)
-        ON DELETE CASCADE ON UPDATE CASCADE
-);
-
 -- =========================================
 -- LISTA DE ESPERA
 -- =========================================
