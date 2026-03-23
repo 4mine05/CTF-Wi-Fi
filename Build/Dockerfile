@@ -1,8 +1,7 @@
 FROM docker.io/kalilinux/kali-rolling
 
 # Update Repsositories and install necessary tools
-RUN apt update && apt -y upgrade && \
-    apt install -y \
+RUN apt update && apt install -y \
         nano vim \
         python3 \
         iproute2 iw wireless-tools net-tools \
