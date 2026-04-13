@@ -75,9 +75,7 @@ try {
             provision_requested_at,
             created_at,
             activated_at,
-            finished_at,
-            last_sync_at,
-            error_message
+            finished_at
         )
         VALUES (
             ?, 'pending',
@@ -95,9 +93,7 @@ try {
             provision_requested_at = NOW(),
             created_at = NULL,
             activated_at = NULL,
-            finished_at = NULL,
-            last_sync_at = NULL,
-            error_message = NULL
+            finished_at = NULL
     ");
 $stmt->execute([$userId]);
 
