@@ -65,9 +65,7 @@ try {
     $stmt = $pdo->prepare("
         UPDATE player_envs
         SET env_status = 'not_created',
-            provision_requested_at = NULL,
-            error_message = NULL,
-            last_sync_at = NOW()
+            provision_requested_at = NULL
         WHERE user_id = ?
     ");
     $stmt->execute([$userId]);
