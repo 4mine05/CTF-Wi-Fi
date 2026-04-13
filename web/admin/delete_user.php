@@ -69,9 +69,7 @@ try {
             finished_at = CASE
                 WHEN env_status IN ('creating', 'created', 'active', 'finished') THEN NOW()
                 ELSE finished_at
-            END,
-            error_message = NULL,
-            last_sync_at = NOW()
+            END
         WHERE user_id = ?
     ");
     $stmt->execute([$userId]);
