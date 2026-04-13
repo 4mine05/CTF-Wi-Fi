@@ -83,47 +83,7 @@ function envStatusLabel(?string $status): string
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel admin - Usuarios</title>
-    <!-- <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 24px;
-        }
-        .cards {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-        }
-        .card {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 12px 16px;
-            min-width: 180px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            vertical-align: top;
-            text-align: left;
-        }
-        th {
-            background: #f3f3f3;
-        }
-        form.inline {
-            display: inline-block;
-            margin: 2px;
-        }
-        .actions {
-            min-width: 260px;
-        }
-    </style>
--->
+    <title>Panel admin</title>
 </head>
 <body>
     <h1>Panel de administración</h1>
