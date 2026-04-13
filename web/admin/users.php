@@ -48,7 +48,7 @@ $stmt = $pdo->query("
     LEFT JOIN player_envs e ON e.user_id = u.id
     ORDER BY
         FIELD(u.role, 'admin', 'player'),
-        FIELD(u.status, 'pending_review', 'approved', 'waitlisted', 'blocked', 'deleted'),
+        FIELD(u.status, 'pending_review', 'approved', 'waitlisted', 'deleted'),
         u.created_at DESC
 ");
 $allUsers = $stmt->fetchAll();
