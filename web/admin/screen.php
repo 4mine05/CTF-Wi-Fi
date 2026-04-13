@@ -1,0 +1,209 @@
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../lib/bootstrap.php';
+requireAdmin();
+
+$publicScreenEnabled = getConfig($pdo, 'public_screen_enabled', '1');
+if ($publicScreenEnabled !== '1') {
+    http_response_code(403);
+    exit('La pantalla pública está desactivada.');
+}
+
+$maxPlayers = getConfigInt($pdo, 'max_players', 30);
+
+$stmt = $pdo->query("
+    SELECT COUNT(*)
+    FROM users
+    WHERE status IN ('pending_review', 'approved')
+");
+$reservedSlots = (int)$stmt->fetchColumn();
+
+$freeSlots = max(0, $maxPlayers - $reservedSlots);
+
+$stmt = $pdo->query("
+    SELECT COUNT(*)
+    FROM waitlist
+    WHERE status = 'waiting'
+");
+$waitlistCount = (int)$stmt->fetchColumn();
+
+$stmt = $pdo->query("
+    SELECT u.alias, w.joined_at
+    FROM waitlist w
+    JOIN users u ON u.id = w.user_id
+    WHERE w.status = 'waiting'
+      AND u.status = 'waitlisted'
+    ORDER BY w.joined_at ASC
+    LIMIT 10
+");
+$waitlist = $stmt->fetchAll();
+
+$stmt = $pdo->query("
+    SELECT COUNT(*)
+    FROM player_envs
+    WHERE env_status IN ('created', 'active')
+");
+$activeEnvs = (int)$stmt->fetchColumn();
+
+$stmt = $pdo->query("
+    SELECT u.alias, s.points, s.levels_completed, s.failed_attempts, s.hints_used, s.total_time_seconds
+    FROM scores s
+    JOIN users u ON u.id = s.user_id
+    WHERE u.status = 'approved'
+    ORDER BY s.points DESC, s.levels_completed DESC, s.total_time_seconds ASC
+    LIMIT 10
+");
+$leaderboard = $stmt->fetchAll();
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pantalla pública - CTF WiFi</title>
+    <meta http-equiv="refresh" content="1">
+    <!-- <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 24px;
+            background: #f5f7fb;
+            color: #222;
+        }
+
+        h1, h2 {
+            margin-bottom: 12px;
+        }
+
+        .topbar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .big {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #eef2f7;
+        }
+
+        .muted {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        ol {
+            margin: 0;
+            padding-left: 22px;
+        }
+
+        li {
+            padding: 6px 0;
+        }
+    </style> -->
+</head>
+<body>
+    <h1>CTF WiFi</h1>
+    <p> <a href="/admin/users.php">Volver al panel de usuarios</a> </p>
+
+    <div class="topbar">    
+        <div class="card">
+            <div>Plazas reservadas/ocupadas</div>
+            <div class="big"><?= h((string)$reservedSlots) ?> / <?= h((string)$maxPlayers) ?></div>
+        </div>
+
+        <div class="card">
+            <div>Plazas libres</div>
+            <div class="big"><?= h((string)$freeSlots) ?></div>
+        </div>
+
+        <div class="card">
+            <div>Usuarios en espera</div>
+            <div class="big"><?= h((string)$waitlistCount) ?></div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Lista de espera</h2>
+
+            <?php if (!$waitlist): ?>
+                <p>No hay usuarios en lista de espera.</p>
+            <?php else: ?>
+                <ol>
+                    <?php foreach ($waitlist as $row): ?>
+                        <li>
+                            <strong><?= h((string)$row['alias']) ?></strong>
+                            <span class="muted"- en espera</span>
+                        </li>
+                    <?php endforeach; ?>
+                </ol>
+            <?php endif; ?>
+        </div>
+
+        <div class="card">
+            <h2>Leaderboard</h2>
+
+            <?php if (!$leaderboard): ?>
+                <p>Todavía no hay puntuaciones registradas.</p>
+            <?php else: ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Alias</th>
+                            <th>Puntos</th>
+                            <th>Niveles</th>
+                            <th>Fallos</th>
+                            <th>Pistas</th>
+                            <th>Tiempo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($leaderboard as $index => $row): ?>
+                            <tr>
+                                <td><?= h((string)($index + 1)) ?></td>
+                                <td><?= h((string)$row['alias']) ?></td>
+                                <td><?= h((string)$row['points']) ?></td>
+                                <td><?= h((string)$row['levels_completed']) ?></td>
+                                <td><?= h((string)$row['failed_attempts']) ?></td>
+                                <td><?= h((string)$row['hints_used']) ?></td>
+                                <td><?= h(formatSeconds((int)$row['total_time_seconds'])) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+    </div>
+</body>
+</html>
