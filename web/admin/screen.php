@@ -47,7 +47,7 @@ $stmt = $pdo->query("
 $activeEnvs = (int)$stmt->fetchColumn();
 
 $stmt = $pdo->query("
-    SELECT u.alias, s.points, s.levels_completed, s.failed_attempts, s.hints_used, s.total_time_seconds
+    SELECT u.alias, s.points, s.levels_completed, s.hints_used, s.total_time_seconds
     FROM scores s
     JOIN users u ON u.id = s.user_id
     WHERE u.status = 'approved'
