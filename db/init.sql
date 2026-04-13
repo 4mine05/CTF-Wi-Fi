@@ -15,9 +15,9 @@ CREATE TABLE app_config (
 );
 
 INSERT INTO app_config (config_key, config_value) VALUES
-('max_players', '30'),
+('max_players', '20'),
 ('registration_open', '1'),
-('public_screen_enabled', '1');
+('public_screen_enabled', '0');
 
 -- =========================================
 -- USUARIOS
@@ -26,11 +26,11 @@ CREATE TABLE users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     alias VARCHAR(32) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    container_password_hash VARCHAR(255) NULL,
     role ENUM('admin', 'player') NOT NULL DEFAULT 'player',
-    status ENUM('pending_review', 'waitlisted', 'approved', 'blocked', 'deleted')
+    status ENUM('pending_review', 'waitlisted', 'approved', 'deleted')
         NOT NULL DEFAULT 'pending_review',
     approved_at DATETIME NULL,
-    blocked_at DATETIME NULL,
     deleted_at DATETIME NULL,
     last_login_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -47,7 +47,13 @@ CREATE TABLE invitation_codes (
     code VARCHAR(64) NOT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    UNIQUE KEY uq_invitation_codes_code (code)
 );
+-- =========================================
+-- Código de invitación genérico para usuarios nuevos
+-- =========================================
+INSERT INTO invitation_codes (code, is_active, created_at)
+VALUES ('CLASE2026', 1, NOW());
 -- =========================================
 -- LISTA DE ESPERA
 -- =========================================
@@ -85,8 +91,6 @@ CREATE TABLE player_envs (
     created_at DATETIME NULL,
     activated_at DATETIME NULL,
     finished_at DATETIME NULL,
-    last_sync_at DATETIME NULL,
-    error_message TEXT NULL,
 
     UNIQUE KEY uq_player_envs_user (user_id),
     UNIQUE KEY uq_player_envs_container_name (container_name),
@@ -98,6 +102,32 @@ CREATE TABLE player_envs (
 );
 
 -- =========================================
+-- NIVELES
+-- =========================================
+CREATE TABLE levels (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    level_order INT UNSIGNED NOT NULL UNIQUE,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NULL,
+    points INT UNSIGNED NOT NULL DEFAULT 0
+);
+
+
+-- =========================================
+-- Pistas de los niveles
+-- =========================================
+CREATE TABLE level_hints (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    level_id INT UNSIGNED NOT NULL,
+    hint_order INT UNSIGNED NOT NULL,
+    hint_text TEXT NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    UNIQUE KEY uq_level_hint_order (level_id, hint_order),
+    FOREIGN KEY (level_id) REFERENCES levels(id)
+        ON DELETE CASCADE
+);
+
+-- =========================================
 -- PUNTUACIONES / LEADERBOARD
 -- =========================================
 CREATE TABLE scores (
@@ -106,7 +136,6 @@ CREATE TABLE scores (
     points INT NOT NULL DEFAULT 0,
     levels_completed INT UNSIGNED NOT NULL DEFAULT 0,
     valid_flags INT UNSIGNED NOT NULL DEFAULT 0,
-    failed_attempts INT UNSIGNED NOT NULL DEFAULT 0,
     hints_used INT UNSIGNED NOT NULL DEFAULT 0,
     total_time_seconds INT UNSIGNED NOT NULL DEFAULT 0,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -119,26 +148,6 @@ CREATE TABLE scores (
 );
 
 -- =========================================
--- LOG DE ACCIONES DEL ADMIN
--- =========================================
-CREATE TABLE admin_actions (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    admin_user_id BIGINT UNSIGNED NOT NULL,
-    target_user_id BIGINT UNSIGNED NULL,
-    action_type VARCHAR(50) NOT NULL,
-    details TEXT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    KEY idx_admin_actions_admin (admin_user_id),
-    KEY idx_admin_actions_target (target_user_id),
-    CONSTRAINT fk_admin_actions_admin
-        FOREIGN KEY (admin_user_id) REFERENCES users(id)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT fk_admin_actions_target
-        FOREIGN KEY (target_user_id) REFERENCES users(id)
-        ON DELETE SET NULL ON UPDATE CASCADE
-);
-
--- =========================================
 -- CREAR USUARIO ADMINISTRADOR
 -- =========================================
 INSERT INTO users (alias, password_hash, role, status, approved_at)
@@ -148,9 +157,4 @@ VALUES (
   'admin',
   'approved',
   NOW()
-);
--- =========================================
--- Código de invitación para usuarios nuevos
--- =========================================
-INSERT INTO invitation_codes (code, created_by_admin_id, is_active, max_uses, use_count)
-VALUES ('CLASE2026', 1, 1, 30, 0);
+);  
