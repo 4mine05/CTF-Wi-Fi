@@ -183,7 +183,6 @@ $leaderboard = $stmt->fetchAll();
                             <th>Alias</th>
                             <th>Puntos</th>
                             <th>Niveles</th>
-                            <th>Fallos</th>
                             <th>Pistas</th>
                             <th>Tiempo</th>
                         </tr>
@@ -195,7 +194,6 @@ $leaderboard = $stmt->fetchAll();
                                 <td><?= h((string)$row['alias']) ?></td>
                                 <td><?= h((string)$row['points']) ?></td>
                                 <td><?= h((string)$row['levels_completed']) ?></td>
-                                <td><?= h((string)$row['failed_attempts']) ?></td>
                                 <td><?= h((string)$row['hints_used']) ?></td>
                                 <td><?= h(formatSeconds((int)$row['total_time_seconds'])) ?></td>
                             </tr>
