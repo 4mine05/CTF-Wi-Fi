@@ -3,7 +3,7 @@
 ### 1. Cliente MySQL 
 
 ```bash
-sudo apt update && sudo apt install mysql-client-core -y
+sudo apt update && sudo apt install mysql-client -y
 ```
 ### 2. Docker y Docker Compose
   - **2.1 Actualizar el sistema e instalar dependencias básicas**
