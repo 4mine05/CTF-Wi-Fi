@@ -81,7 +81,7 @@ try {
             ?, 'pending',
             NULL, NULL, NULL, NULL, NULL,
             NOW(),
-            NULL, NULL, NULL, NULL, NULL
+            NULL, NULL, NULL
         )
         ON DUPLICATE KEY UPDATE
             env_status = 'pending',
@@ -95,7 +95,7 @@ try {
             activated_at = NULL,
             finished_at = NULL
     ");
-$stmt->execute([$userId]);
+    $stmt->execute([$userId]);
 
     $pdo->commit();
     header('Location: /admin/users.php');
