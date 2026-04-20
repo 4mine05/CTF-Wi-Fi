@@ -42,7 +42,7 @@ sudo apt update && sudo apt install mysql-client -y
   ```
 ## Construir imagen base:
 ```bash
-sudo docker build -t ctf-player-base:1.0 ./CTF-Wi-Fi/Build
+sudo docker build -t ctf-player-base:1.0 ./Build
 ```
 
 
