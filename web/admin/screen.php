@@ -62,79 +62,9 @@ $leaderboard = $stmt->fetchAll();
     <meta charset="UTF-8">
     <title>Pantalla pública - CTF WiFi</title>
     <meta http-equiv="refresh" content="1">
-    <!-- <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 24px;
-            background: #f5f7fb;
-            color: #222;
-        }
-
-        h1, h2 {
-            margin-bottom: 12px;
-        }
-
-        .topbar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .big {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-top: 8px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-
-        th, td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-
-        th {
-            background: #eef2f7;
-        }
-
-        .muted {
-            color: #666;
-            font-size: 0.95rem;
-        }
-
-        ol {
-            margin: 0;
-            padding-left: 22px;
-        }
-
-        li {
-            padding: 6px 0;
-        }
-    </style> -->
 </head>
 <body>
     <h1>CTF WiFi</h1>
-    <p> <a href="/admin/users.php">Volver al panel de usuarios</a> </p>
-
     <div class="topbar">    
         <div class="card">
             <div>Plazas reservadas/ocupadas</div>
