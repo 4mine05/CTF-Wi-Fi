@@ -83,6 +83,9 @@ $env = $stmt->fetch();
         (string)$env['ssh_port']
     );
     ?>
+        <a href="intro.php">
+            <button type="button">Comenzar</button>
+        </a>
 
     <p><strong>Comando de acceso SSH:</strong></p>
     <textarea rows="1" cols="50" readonly><?= h($sshCommand) ?></textarea>

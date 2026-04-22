@@ -47,11 +47,11 @@ $stmt = $pdo->query("
 $activeEnvs = (int)$stmt->fetchColumn();
 
 $stmt = $pdo->query("
-    SELECT u.alias, s.points, s.levels_completed, s.hints_used, s.total_time_seconds
+    SELECT u.alias, s.points, s.levels_completed, s.hints_used
     FROM scores s
     JOIN users u ON u.id = s.user_id
     WHERE u.status = 'approved'
-    ORDER BY s.points DESC, s.levels_completed DESC, s.total_time_seconds ASC
+    ORDER BY s.points DESC, s.levels_completed DESC
     LIMIT 10
 ");
 $leaderboard = $stmt->fetchAll();
@@ -114,7 +114,6 @@ $leaderboard = $stmt->fetchAll();
                             <th>Puntos</th>
                             <th>Niveles</th>
                             <th>Pistas</th>
-                            <th>Tiempo</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -125,7 +124,6 @@ $leaderboard = $stmt->fetchAll();
                                 <td><?= h((string)$row['points']) ?></td>
                                 <td><?= h((string)$row['levels_completed']) ?></td>
                                 <td><?= h((string)$row['hints_used']) ?></td>
-                                <td><?= h(formatSeconds((int)$row['total_time_seconds'])) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

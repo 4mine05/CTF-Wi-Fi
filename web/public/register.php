@@ -68,8 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = (int)$pdo->lastInsertId();
 
             $stmt = $pdo->prepare("
-                INSERT INTO scores (user_id, points, levels_completed, valid_flags, hints_used, total_time_seconds)
-                VALUES (?, 0, 0, 0, 0, 0)
+                INSERT INTO scores (user_id, points, levels_completed, hints_used, failed_attempts) 
+                VALUES (?, 0, 0, 0, 0)
             ");
             $stmt->execute([$userId]);
 
