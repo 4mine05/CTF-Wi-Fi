@@ -49,11 +49,10 @@ CREATE TABLE invitation_codes (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_invitation_codes_code (code)
 );
--- =========================================
--- Código de invitación genérico para usuarios nuevos
--- =========================================
+
 INSERT INTO invitation_codes (code, is_active, created_at)
 VALUES ('CLASE2026', 1, NOW());
+
 -- =========================================
 -- LISTA DE ESPERA
 -- =========================================
@@ -84,64 +83,56 @@ CREATE TABLE player_envs (
     ssh_host VARCHAR(255) NULL,
     ssh_port INT UNSIGNED NULL,
     container_username VARCHAR(64) NULL,
-
     initial_password_enc VARBINARY(255) NULL,
-
     provision_requested_at DATETIME NULL,
     created_at DATETIME NULL,
     activated_at DATETIME NULL,
     finished_at DATETIME NULL,
-
     UNIQUE KEY uq_player_envs_user (user_id),
     UNIQUE KEY uq_player_envs_container_name (container_name),
     UNIQUE KEY uq_player_envs_ssh_port (ssh_port),
-
     CONSTRAINT fk_player_envs_user
         FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- =========================================
--- NIVELES
+-- PROGRESO DEL JUGADOR POR NIVEL
 -- =========================================
-CREATE TABLE levels (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    level_order INT UNSIGNED NOT NULL UNIQUE,
-    title VARCHAR(100) NOT NULL,
-    description TEXT NULL,
-    points INT UNSIGNED NOT NULL DEFAULT 0
-);
-
-
--- =========================================
--- Pistas de los niveles
--- =========================================
-CREATE TABLE level_hints (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    level_id INT UNSIGNED NOT NULL,
-    hint_order INT UNSIGNED NOT NULL,
-    hint_text TEXT NOT NULL,
-    is_active TINYINT(1) NOT NULL DEFAULT 1,
-    UNIQUE KEY uq_level_hint_order (level_id, hint_order),
-    FOREIGN KEY (level_id) REFERENCES levels(id)
-        ON DELETE CASCADE
+CREATE TABLE user_level_progress (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    level_number INT UNSIGNED NOT NULL,
+    completed TINYINT(1) NOT NULL DEFAULT 0,
+    hints_used INT UNSIGNED NOT NULL DEFAULT 0,
+    failed_attempts INT UNSIGNED NOT NULL DEFAULT 0,
+    points_earned INT NOT NULL DEFAULT 0,
+    completed_at DATETIME NULL,
+    last_attempt_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_user_level (user_id, level_number),
+    KEY idx_user_progress_user (user_id),
+    CONSTRAINT fk_user_level_progress_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- =========================================
--- PUNTUACIONES / LEADERBOARD
+-- PUNTUACIÓN GLOBAL / LEADERBOARD
 -- =========================================
 CREATE TABLE scores (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL,
     points INT NOT NULL DEFAULT 0,
     levels_completed INT UNSIGNED NOT NULL DEFAULT 0,
-    valid_flags INT UNSIGNED NOT NULL DEFAULT 0,
     hints_used INT UNSIGNED NOT NULL DEFAULT 0,
-    total_time_seconds INT UNSIGNED NOT NULL DEFAULT 0,
+    failed_attempts INT UNSIGNED NOT NULL DEFAULT 0,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_scores_user (user_id),
-    KEY idx_scores_ranking (points DESC, levels_completed DESC, total_time_seconds ASC),
+    KEY idx_scores_ranking (points DESC, levels_completed DESC, failed_attempts ASC),
     CONSTRAINT fk_scores_user
         FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE ON UPDATE CASCADE
@@ -152,9 +143,9 @@ CREATE TABLE scores (
 -- =========================================
 INSERT INTO users (alias, password_hash, role, status, approved_at)
 VALUES (
-  'admin', -- Usuario/Alias
-  '$2y$12$bAFgGglV3m1UPbbkioGNreC6LzvrgAJlTsYjUkn8Y4nA/hb7prIIK',  -- Contrasena: admin1234
+  'admin',
+  '$2y$12$bAFgGglV3m1UPbbkioGNreC6LzvrgAJlTsYjUkn8Y4nA/hb7prIIK',
   'admin',
   'approved',
   NOW()
-);  
+);
