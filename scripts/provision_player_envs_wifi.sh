@@ -38,11 +38,7 @@ EXTRA_MARGIN=0
 # ==========================================
 db_query() {
     local sql="$1"
-<<<<<<< HEAD
     "$DOCKER_BIN" exec "$DB_CONTAINER" mariadb -uroot -p"$DB_ROOT_PASS" "$DB_NAME" -Nse "$sql"
-=======
-    "$DOCKER_BIN" exec  "$DB_CONTAINER" mariadb -uroot -p"$DB_ROOT_PASS" "$DB_NAME" -Nse "$sql"
->>>>>>> 38194f77f47d29664e85b7ecc3d98df5920e146b
 }
 
 # ==========================================

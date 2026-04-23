@@ -31,9 +31,9 @@ $failedAttemptPenalty = 5;
 $flagHash = '$2y$12$U8mbCWzlfaXUQRZaT8RH3OgnE3fdmE57YMo9cBSH2Njd1VJUcednK'; /*Flag: 44:45:41:55:54:48*/
 
 $hints = [
-    1 => 'Observa el tráfico de gestión y presta atención a los clientes que ya conocen la red.',
-    2 => 'Una red oculta no anuncia su nombre en las balizas, pero puede revelarse durante la asociación.',
-    3 => 'La flag debe contener el BSSID exacto de la red detectada.'
+    1 => 'Usa el modo monitor',
+    2 => 'No puedes capturar lo que no estás mirando. Activa tu visión periférica sobre el objetivo y quédate en silencio recolectando balizas.',
+    3 => 'La red oculta está escondida en el sexto carril de los 11 carriles.',
 ];
 
 $message = '';
