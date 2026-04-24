@@ -8,7 +8,7 @@ RUN apt update && apt install -y \
         aircrack-ng reaver bully cowpatty hashcat \
         openssh-server sudo \
         pciutils \
-        wpasupplicant isc-dhcp-common isc-dhcp-client iputils-ping
+        wpasupplicant man-db isc-dhcp-client iputils-ping
 
 RUN mkdir -p /var/run/sshd
 
