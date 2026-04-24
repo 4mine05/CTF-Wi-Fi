@@ -18,8 +18,8 @@ if ($status !== 'approved') {
 $userId = (int)($_SESSION['user']['id'] ?? 0);
 $alias = (string)($_SESSION['user']['alias'] ?? 'jugador');
 
-$levelNumber = 1;
-$basePoints = 50;
+$levelNumber = 2;
+$basePoints = 75;
 $hintPenalty = 10;
 $failedAttemptPenalty = 5;
 
@@ -28,12 +28,12 @@ $failedAttemptPenalty = 5;
  * Ejemplo para generarlo:
  * php -r "echo password_hash('CTF{AA:BB:CC:DD:EE:FF}', PASSWORD_DEFAULT), PHP_EOL;"
  */
-$flagHash = '$2y$12$U8mbCWzlfaXUQRZaT8RH3OgnE3fdmE57YMo9cBSH2Njd1VJUcednK'; /*Flag: 44:45:41:55:54:48*/
+$flagHash = '$2y$12$q30g/BJWlZ8KocA4No1j8e4cv0Xc/Ce5W7CecCBtJAAh9llc0.jMa'; /*Flag: level2*/
 
 $hints = [
-    1 => 'Usa el modo monitor',
-    2 => 'No puedes capturar lo que no estás mirando. Activa tu visión periférica sobre el objetivo y quédate en silencio recolectando balizas.',
-    3 => 'La red oculta está escondida en el sexto carril de los 13 carriles.',
+    1 => 'El fantasma no dice su nombre, pero sus seguidores sí pueden delatarlo',
+    2 => 'Revisa bien la pista que dejaste en el nivel anterior: el BSSID contiene una palabra importante en hexadecimal.',
+    3 => 'Fuerza una reasociación del cliente y observa qué información revela.',
 ];
 
 $message = '';
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
 
                 $pdo->commit();
 
-                header('Location: /player/level1.php');
+                header('Location: /player/level2.php');
                 exit;
             } catch (Throwable $e) {
                 $pdo->rollBack();
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
             $message = 'Debes introducir una flag.';
             $messageType = 'error';
         } elseif (!$flagHash) {
-            $message = 'Debes configurar primero el hash real de la flag en level1.php.';
+            $message = 'Debes configurar primero el hash real de la flag en level2.php.';
             $messageType = 'error';
         } else {
             if (password_verify($submittedFlag, $flagHash)) {
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
                         exit;
                     }
 
-                    $_SESSION['level1_completed_message'] = 'Has completado el nivel 1 correctamente.';
+                    $_SESSION['level2_completed_message'] = 'Has completado el nivel 2 correctamente.';
                     header('Location: /player/dashboard.php');
                     exit;
                 } catch (Throwable $e) {
@@ -198,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
 
                     $pdo->commit();
 
-                    header('Location: /player/level1.php?error=flag');
+                    header('Location: /player/level2.php?error=flag');
                     exit;
                 } catch (Throwable $e) {
                     $pdo->rollBack();
@@ -242,7 +242,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nivel 1 - Operación Espectro</title>
+    <title>Nivel 2 - Poner nombre al fantasma</title>
     <style>
         :root {
             --bg: #0f172a;
@@ -457,8 +457,8 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
 
     <div class="grid">
         <div class="card">
-            <div class="eyebrow">Nivel 1</div>
-            <h1>La señal que no debía existir</h1>
+            <div class="eyebrow">Nivel 2</div>
+            <h1>Poner nombre al fantasma</h1>
 
             <?php if ($message !== ''): ?>
                 <div class="message <?= h($messageType) ?>">
@@ -473,16 +473,17 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             <?php endif; ?>
 
             <p>
-                Durante una auditoría rutinaria del espectro aparecen tramas sospechosas.
-                No hay un SSID visible, pero sí actividad de clientes. Todo indica que alguien
-                está operando un punto de acceso oculto dentro del entorno.
+                Ya has conseguido identificar qué dispositivo está emitiendo la red oculta.
+                Ahora el siguiente paso es averiguar cómo la conocen sus clientes. Aunque el
+                punto de acceso no publique su nombre, los equipos asociados pueden revelar
+                la identidad real de la red.
             </p>
 
             <p>
-                Tu misión en este nivel es identificar el punto de acceso responsable de esta
-                infraestructura encubierta y entregar la flag con el <strong>BSSID exacto</strong>
-                de la red oculta.
+                Tu misión en este nivel es reconstruir la identidad de esa infraestructura
+                encubierta y entregar la flag con el <strong>SSID exacto</strong> de la red oculta.
             </p>
+
 
             <div class="helper-box">
                 <p><strong>Ayuda</strong></p>
@@ -490,17 +491,18 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
                 <ul class="muted">
                     <li><a href="https://aircrack-ng.org/doku.php?id=airmon-ng" target="_blank"><code>airmon-ng</code></a></li>
                     <li><a href="https://aircrack-ng.org/doku.php?id=airodump-ng" target="_blank"><code>airodump-ng</code></a></li>
+                    <li><a href="https://aircrack-ng.org/doku.php?id=aireplay-ng" target="_blank"><code>aireplay-ng</code></a></li>
                 </ul>
             </div>
 
             <div class="meta">
                 <div class="meta-box">
                     <strong>Objetivo</strong>
-                    <p class="muted">Descubrir el BSSID exacto de la red WiFi oculta.</p>
+                    <p class="muted">Obtener el SSID real de la red WiFi oculta.</p>
                 </div>
                 <div class="meta-box">
                     <strong>Formato esperado</strong>
-                    <p class="muted">Introduce la flag completa con el formato que hayas definido para el reto.</p>
+                    <p class="muted">Introduce la flag completa con el SSID exacto en el formato definido para el reto.</p>
                 </div>
             </div>
 
@@ -511,7 +513,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
                         type="text"
                         name="flag"
                         id="flag"
-                        placeholder="Introduce aquí la flag del nivel 1 (Ejemplo: 00:AA:11:BB:22:CC)"
+                        placeholder="Introduce aquí la flag del nivel 2"
                         autocomplete="off"
                     >
 
@@ -530,7 +532,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             <?php else: ?>
                 <div class="actions" style="margin-top: 18px;">
                     <?php if (file_exists(__DIR__ . '/level2.php')): ?>
-                        <a href="/player/level2.php" class="btn btn-primary">Ir al nivel 2</a>
+                        <a href="/player/level3.php" class="btn btn-primary">Ir al nivel 3</a>
                     <?php endif; ?>
                     <a href="/player/dashboard.php" class="btn btn-secondary">Volver al panel</a>
                 </div>
