@@ -243,205 +243,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nivel 1 - Operación Espectro</title>
-    <style>
-        :root {
-            --bg: #0f172a;
-            --panel: #111827;
-            --panel-2: #1f2937;
-            --text: #e5e7eb;
-            --muted: #9ca3af;
-            --accent: #22c55e;
-            --accent-hover: #16a34a;
-            --border: #374151;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #38bdf8;
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: linear-gradient(135deg, #0b1120, #111827);
-            color: var(--text);
-            min-height: 100vh;
-        }
-
-        .wrapper {
-            max-width: 980px;
-            margin: 0 auto;
-            padding: 32px 20px;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-
-        .topbar a {
-            color: var(--muted);
-            text-decoration: none;
-        }
-
-        .topbar a:hover {
-            color: var(--text);
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
-
-        .card {
-            background: rgba(17, 24, 39, 0.95);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.30);
-        }
-
-        .eyebrow {
-            color: var(--warning);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-size: 0.88rem;
-            margin-bottom: 10px;
-        }
-
-        h1, h2, h3 {
-            margin-top: 0;
-        }
-
-        p {
-            line-height: 1.7;
-        }
-
-        .muted {
-            color: var(--muted);
-        }
-
-        .meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .meta-box {
-            background: var(--panel-2);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 14px;
-        }
-
-        .message {
-            margin-bottom: 18px;
-            padding: 12px 14px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-
-        .message.info { background: rgba(56, 189, 248, 0.10); border-color: rgba(56, 189, 248, 0.35); }
-        .message.warning { background: rgba(245, 158, 11, 0.10); border-color: rgba(245, 158, 11, 0.35); }
-        .message.error { background: rgba(239, 68, 68, 0.10); border-color: rgba(239, 68, 68, 0.35); }
-        .message.success { background: rgba(34, 197, 94, 0.10); border-color: rgba(34, 197, 94, 0.35); }
-
-        .hint {
-            margin-top: 12px;
-            padding: 12px 14px;
-            background: var(--panel-2);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-        }
-
-        .helper-box {
-            margin-top: 20px;
-            padding: 16px 18px;
-            background: rgba(56, 189, 248, 0.08);
-            border: 1px solid rgba(56, 189, 248, 0.28);
-            border-radius: 12px;
-        }
-
-        .helper-box p {
-            margin: 0 0 10px;
-        }
-
-        .helper-box ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .helper-box code {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 2px 6px;
-            color: #bfdbfe;
-        }
-
-        form {
-            margin-top: 18px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: #0b1220;
-            color: var(--text);
-            margin-bottom: 12px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        button, .btn {
-            display: inline-block;
-            padding: 12px 18px;
-            border-radius: 10px;
-            border: none;
-            text-decoration: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #052e16;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-hover);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.15);
-            color: #fecaca;
-            border: 1px solid rgba(239, 68, 68, 0.35);
-        }
-
-        @media (max-width: 800px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/stylesheets/css.css">
 </head>
 <body>
 <div class="wrapper">
@@ -528,7 +330,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
                     </div>
                 </form>
             <?php else: ?>
-                <div class="actions" style="margin-top: 18px;">
+                <div class="actions actions-top">
                     <?php if (file_exists(__DIR__ . '/level2.php')): ?>
                         <a href="/player/level2.php" class="btn btn-primary">Ir al nivel 2</a>
                     <?php endif; ?>
@@ -544,7 +346,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             <p><strong>Pistas usadas:</strong> <?= h((string)$hintsUsed) ?> / <?= h((string)count($hints)) ?></p>
             <p><strong>Intentos fallidos:</strong> <?= h((string)$failedAttempts) ?></p>
 
-            <hr style="border-color:#374151; margin: 20px 0;">
+            <hr>
 
             <h3>Pistas desbloqueadas</h3>
 
@@ -559,7 +361,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
                 <?php endfor; ?>
             <?php endif; ?>
 
-            <hr style="border-color:#374151; margin: 20px 0;">
+            <hr>
 
             <h3>Penalizaciones</h3>
             <p class="muted">Cada pista utilizada resta <?= h((string)$hintPenalty) ?> puntos.</p>

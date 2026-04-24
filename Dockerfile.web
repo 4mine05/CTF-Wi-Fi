@@ -1,5 +1,8 @@
 FROM php:8.2-apache-bookworm
 
+# Install aircrack-ng for handshake capture validation
+RUN apt-get update && apt-get install -y aircrack-ng && rm -rf /var/lib/apt/lists/*
+
 # Typical PHP extensions for MySQL/MariaDB
 RUN docker-php-ext-install pdo pdo_mysql mysqli
 
