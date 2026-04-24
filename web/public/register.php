@@ -3,9 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../lib/bootstrap.php';
 
-
-
-$message = '';  
+$message = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -68,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = (int)$pdo->lastInsertId();
 
             $stmt = $pdo->prepare("
-                INSERT INTO scores (user_id, points, levels_completed, hints_used, failed_attempts) 
+                INSERT INTO scores (user_id, points, levels_completed, hints_used, failed_attempts)
                 VALUES (?, 0, 0, 0, 0)
             ");
             $stmt->execute([$userId]);
@@ -96,46 +94,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$submittedAlias = (string)($_POST['alias'] ?? '');
+$submittedInviteCode = (string)($_POST['invite_code'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro - CTF WiFi</title>
+    <link rel="stylesheet" href="/stylesheets/css.css">
 </head>
 <body>
-    <h1>Registro</h1>
+    <div class="wrapper narrow">
+        <div class="topbar">
+            <div>Portal CTF WiFi</div>
+            <div><a href="/public/login.php">Iniciar sesión</a></div>
+        </div>
 
-    <?php if ($message !== ''): ?>
-        <p style="color: green;"><?= h($message) ?></p>
-    <?php endif; ?>
+        <div class="card">
+            <div class="eyebrow">Registro</div>
+            <h1>Crear cuenta</h1>
+            <p class="muted">
+                Registra tu acceso al evento con un alias, una contraseña válida y un código de invitación.
+            </p>
 
-    <?php if ($error !== ''): ?>
-        <p style="color: red;"><?= h($error) ?></p>
-    <?php endif; ?>
+            <?php if ($message !== ''): ?>
+                <div class="message success"><?= h($message) ?></div>
+            <?php endif; ?>
 
-    <form method="post">
-        <label>
-            Alias:
-            <input type="text" name="alias" maxlength="32" required>
-        </label>
-        <br><br>
+            <?php if ($error !== ''): ?>
+                <div class="message error"><?= h($error) ?></div>
+            <?php endif; ?>
 
-        <label>
-            Contraseña:
-            <input type="password" name="password" required>
-        </label>
-        <br><br>
+            <form method="post">
+                <div class="field">
+                    <label for="alias">Alias</label>
+                    <input
+                        type="text"
+                        name="alias"
+                        id="alias"
+                        maxlength="32"
+                        value="<?= h($submittedAlias) ?>"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
 
-        <label>
-            Código de invitación:
-            <input type="text" name="invite_code" maxlength="64" required>
-        </label>
-        <br><br>
+                <div class="field">
+                    <label for="password">Contraseña</label>
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        autocomplete="new-password"
+                        required
+                    >
+                </div>
 
-        <button type="submit">Registrarse</button>
-    </form>
+                <div class="field">
+                    <label for="invite_code">Código de invitación</label>
+                    <input
+                        type="text"
+                        name="invite_code"
+                        id="invite_code"
+                        maxlength="64"
+                        value="<?= h($submittedInviteCode) ?>"
+                        required
+                    >
+                </div>
 
-    <p><a href="/public/login.php">Ir al inicio de sesión</a></p>
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">Registrarse</button>
+                    <a href="/public/login.php" class="btn btn-secondary">Ir al login</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
