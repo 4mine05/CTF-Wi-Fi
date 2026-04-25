@@ -379,7 +379,7 @@ $currentLevelPoints = max(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nivel 3 - El acceso vigilado</title>
-    <link rel="stylesheet" href="/stylesheets/css.css">
+    <link rel="stylesheet" href="/stylesheet/styles.css">
 </head>
 <body>
 <div class="wrapper">
