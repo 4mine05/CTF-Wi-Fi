@@ -23,7 +23,7 @@ DB_NAME="ctf_wifi"
 DB_ROOT_PASS="root123"
 
 IMAGE_NAME="ctf-player-base:1.0"
-SSH_HOST_VALUE="192.168.145.128"
+SSH_HOST_VALUE="192.168.220.10"
 SSH_PORT_START=2200
 
 # Primeras interfaces reservadas para el host y el laboratorio CTF.

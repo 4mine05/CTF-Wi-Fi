@@ -302,7 +302,8 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
                 </div>
                 <div class="meta-box">
                     <strong>Formato esperado</strong>
-                    <p class="muted">Introduce la flag completa con el formato que hayas definido para el reto.</p>
+                    <p class="muted">Introduce la flag con el BSSID exacto.</p>
+                    <p class="muted">Ejemplo: 00:AA:11:BB:22:CC</p>
                 </div>
             </div>
 

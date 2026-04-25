@@ -50,36 +50,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$submittedAlias = (string)($_POST['alias'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - CTF WiFi</title>
+    <link rel="stylesheet" href="/stylesheets/css.css">
 </head>
 <body>
-    <h1>Iniciar sesión</h1>
+    <div class="wrapper narrow">
+        <div class="topbar">
+            <div>Portal CTF WiFi</div>
+            <div><a href="/public/register.php">Crear cuenta</a></div>
+        </div>
 
-    <?php if ($error !== ''): ?>
-        <p style="color:red;"><?= h($error) ?></p>
-    <?php endif; ?>
+        <div class="card">
+            <div class="eyebrow">Acceso</div>
+            <h1>Iniciar sesion</h1>
+            <p class="muted">
+                Accede con tu alias y contraseña para entrar en el portal del laboratorio.
+            </p>
 
-    <form method="post">
-        <label>
-            Alias:
-            <input type="text" name="alias" maxlength="32" required>
-        </label>
-        <br><br>
+            <?php if ($error !== ''): ?>
+                <div class="message error"><?= h($error) ?></div>
+            <?php endif; ?>
 
-        <label>
-            Contraseña:
-            <input type="password" name="password" required>
-        </label>
-        <br><br>
+            <form method="post">
+                <div class="field">
+                    <label for="alias">Alias</label>
+                    <input
+                        type="text"
+                        name="alias"
+                        id="alias"
+                        maxlength="32"
+                        value="<?= h($submittedAlias) ?>"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
 
-        <button type="submit">Entrar</button>
-    </form>
+                <div class="field">
+                    <label for="password">Contraseña</label>
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
 
-    <p><a href="/public/register.php">Ir al registro</a></p>
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">Entrar</button>
+                    <a href="/public/register.php" class="btn btn-secondary">Ir al registro</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

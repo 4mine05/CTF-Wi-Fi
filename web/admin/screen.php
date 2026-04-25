@@ -37,7 +37,7 @@ $stmt = $pdo->query("
     ORDER BY w.joined_at ASC
     LIMIT 10
 ");
-$waitlist = $stmt->fetchAll();
+$waitlist = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $stmt = $pdo->query("
     SELECT COUNT(*)
@@ -54,81 +54,96 @@ $stmt = $pdo->query("
     ORDER BY s.points DESC, s.levels_completed DESC
     LIMIT 10
 ");
-$leaderboard = $stmt->fetchAll();
+$leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pantalla pública - CTF WiFi</title>
-    <meta http-equiv="refresh" content="1">
+    <meta http-equiv="refresh" content="3">
+    <link rel="stylesheet" href="/stylesheets/css.css">
 </head>
 <body>
-    <h1>CTF WiFi</h1>
-    <div class="topbar">    
-        <div class="card">
-            <div>Plazas reservadas/ocupadas</div>
-            <div class="big"><?= h((string)$reservedSlots) ?> / <?= h((string)$maxPlayers) ?></div>
+    <div class="wrapper wide">
+        <div class="topbar">
+            <div>
+                <div class="eyebrow">Vista en tiempo real</div>
+                <h1>CTF WiFi</h1>
+            </div>
+            <div class="muted">Actualización automática cada 3 segundo.</div>
         </div>
 
-        <div class="card">
-            <div>Plazas libres</div>
-            <div class="big"><?= h((string)$freeSlots) ?></div>
+        <div class="cards">
+            <div class="card compact center">
+                <div class="muted">Plazas reservadas/ocupadas</div>
+                <div class="big"><?= h((string)$reservedSlots) ?> / <?= h((string)$maxPlayers) ?></div>
+            </div>
+            <div class="card compact center">
+                <div class="muted">Plazas libres</div>
+                <div class="big"><?= h((string)$freeSlots) ?></div>
+            </div>
+            <div class="card compact center">
+                <div class="muted">Usuarios en espera</div>
+                <div class="big"><?= h((string)$waitlistCount) ?></div>
+            </div>
+            <div class="card compact center">
+                <div class="muted">Entornos activos</div>
+                <div class="big"><?= h((string)$activeEnvs) ?></div>
+            </div>
         </div>
 
-        <div class="card">
-            <div>Usuarios en espera</div>
-            <div class="big"><?= h((string)$waitlistCount) ?></div>
-        </div>
-    </div>
+        <div class="grid equal actions-top">
+            <div class="card">
+                <h2>Lista de espera</h2>
 
-    <div class="grid">
-        <div class="card">
-            <h2>Lista de espera</h2>
-
-            <?php if (!$waitlist): ?>
-                <p>No hay usuarios en lista de espera.</p>
-            <?php else: ?>
-                <ol>
-                    <?php foreach ($waitlist as $row): ?>
-                        <li>
-                            <strong><?= h((string)$row['alias']) ?></strong>
-                            <span class="muted"- en espera</span>
-                        </li>
-                    <?php endforeach; ?>
-                </ol>
-            <?php endif; ?>
-        </div>
-
-        <div class="card">
-            <h2>Leaderboard</h2>
-
-            <?php if (!$leaderboard): ?>
-                <p>Todavía no hay puntuaciones registradas.</p>
-            <?php else: ?>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Alias</th>
-                            <th>Puntos</th>
-                            <th>Niveles</th>
-                            <th>Pistas</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($leaderboard as $index => $row): ?>
-                            <tr>
-                                <td><?= h((string)($index + 1)) ?></td>
-                                <td><?= h((string)$row['alias']) ?></td>
-                                <td><?= h((string)$row['points']) ?></td>
-                                <td><?= h((string)$row['levels_completed']) ?></td>
-                                <td><?= h((string)$row['hints_used']) ?></td>
-                            </tr>
+                <?php if (!$waitlist): ?>
+                    <div class="empty-state">No hay usuarios en lista de espera.</div>
+                <?php else: ?>
+                    <ol class="status-list">
+                        <?php foreach ($waitlist as $row): ?>
+                            <li>
+                                <strong><?= h((string)$row['alias']) ?></strong>
+                                <span class="muted">- en espera</span>
+                            </li>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
+                    </ol>
+                <?php endif; ?>
+            </div>
+
+            <div class="card">
+                <h2>Leaderboard</h2>
+
+                <?php if (!$leaderboard): ?>
+                    <div class="empty-state">Todavía no hay puntuaciones registradas.</div>
+                <?php else: ?>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Alias</th>
+                                    <th>Puntos</th>
+                                    <th>Niveles</th>
+                                    <th>Pistas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($leaderboard as $index => $row): ?>
+                                    <tr>
+                                        <td><?= h((string)($index + 1)) ?></td>
+                                        <td><?= h((string)$row['alias']) ?></td>
+                                        <td><?= h((string)$row['points']) ?></td>
+                                        <td><?= h((string)$row['levels_completed']) ?></td>
+                                        <td><?= h((string)$row['hints_used']) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </body>

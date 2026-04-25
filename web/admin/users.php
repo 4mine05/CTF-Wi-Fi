@@ -35,7 +35,7 @@ $deletedCount = (int)$stmt->fetchColumn();
 $freeSlots = max(0, $maxPlayers - $reservedSlots);
 
 $stmt = $pdo->query("
-    SELECT 
+    SELECT
         u.id,
         u.alias,
         u.role,
@@ -51,8 +51,8 @@ $stmt = $pdo->query("
         FIELD(u.status, 'pending_review', 'approved', 'waitlisted', 'deleted'),
         u.created_at DESC
 ");
-$allUsers = $stmt->fetchAll();
-// Traducir a español
+$allUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 function userStatusLabel(string $status): string
 {
     return match ($status) {
@@ -63,7 +63,7 @@ function userStatusLabel(string $status): string
         default => $status,
     };
 }
-// Traducir a español
+
 function envStatusLabel(?string $status): string
 {
     return match ($status) {
@@ -75,7 +75,7 @@ function envStatusLabel(?string $status): string
         'active' => 'Activo',
         'finished' => 'Finalizado',
         'error' => 'Error',
-        default => $status,
+        default => (string)$status,
     };
 }
 ?>
@@ -83,163 +83,221 @@ function envStatusLabel(?string $status): string
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel admin</title>
+    <link rel="stylesheet" href="/stylesheets/css.css">
 </head>
 <body>
-    <h1>Panel de administración</h1>
-
-    <p>Administrador: <strong><?= h((string)$_SESSION['user']['alias']) ?></strong></p>
-    <p><a href="/public/logout.php">Cerrar sesión</a></p>
-
-    <h2>Configuración de plazas</h2>
-    <form method="post" action="/admin/update_settings.php">
-        <label>
-            Límite máximo de plazas:
-            <input
-                type="number"
-                name="max_players"
-                min="1"
-                max="500"
-                value="<?= h((string)$maxPlayers) ?>"
-                required
-            >
-        </label>
-        <button type="submit">Guardar</button>
-    </form>
-
-    <div class="cards">
-        <div class="card">
-            <strong>Reservadas/Ocupadas</strong><br>
-            <?= h((string)$reservedSlots) ?> / <?= h((string)$maxPlayers) ?>
+    <div class="wrapper wide">
+        <div class="topbar">
+            <div>Administrador: <strong><?= h((string)$_SESSION['user']['alias']) ?></strong></div>
+            <div>
+                <a href="/admin/screen.php" target="_blank" rel="noopener noreferrer">Abrir pantalla</a> |
+                <a href="/public/logout.php">Cerrar sesión</a>
+            </div>
         </div>
 
         <div class="card">
-            <strong>Plazas libres</strong><br>
-            <?= h((string)$freeSlots) ?>
+            <div class="eyebrow">Administración</div>
+            <h1>Panel de control</h1>
+            <p class="muted">
+                Gestiona plazas, estados de usuarios y visibilidad pública del evento desde una sola vista.
+            </p>
         </div>
 
-        <div class="card">
-            <strong>Aprobados</strong><br>
-            <?= h((string)$approvedCount) ?>
+        <div class="cards actions-top">
+            <div class="card compact center">
+                <div class="muted">Reservadas/Ocupadas</div>
+                <div class="big"><?= h((string)$reservedSlots) ?> / <?= h((string)$maxPlayers) ?></div>
+            </div>
+            <div class="card compact center">
+                <div class="muted">Plazas libres</div>
+                <div class="big"><?= h((string)$freeSlots) ?></div>
+            </div>
+            <div class="card compact center">
+                <div class="muted">Aprobados</div>
+                <div class="big"><?= h((string)$approvedCount) ?></div>
+            </div>
+            <div class="card compact center">
+                <div class="muted">Pendientes</div>
+                <div class="big"><?= h((string)$pendingCount) ?></div>
+            </div>
+            <div class="card compact center">
+                <div class="muted">En espera</div>
+                <div class="big"><?= h((string)$waitlistedCount) ?></div>
+            </div>
+            <div class="card compact center">
+                <div class="muted">Eliminados</div>
+                <div class="big"><?= h((string)$deletedCount) ?></div>
+            </div>
         </div>
 
-        <div class="card">
-            <strong>Pendientes</strong><br>
-            <?= h((string)$pendingCount) ?>
+        <div class="grid equal actions-top">
+            <div class="card">
+                <h2>Configuracion de plazas</h2>
+                <p class="muted">
+                    Ajusta el numero maximo de plazas reservadas u ocupadas dentro del evento.
+                </p>
+
+                <form method="post" action="/admin/update_settings.php">
+                    <div class="field">
+                        <label for="max_players">Limite máximo de plazas</label>
+                        <input
+                            type="number"
+                            name="max_players"
+                            id="max_players"
+                            min="1"
+                            max="500"
+                            value="<?= h((string)$maxPlayers) ?>"
+                            required
+                        >
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Pantalla pública</h2>
+                <div class="message <?= $publicScreenEnabled ? 'success' : 'warning' ?>">
+                    Estado actual: <strong><?= $publicScreenEnabled ? 'Habilitada' : 'Deshabilitada' ?></strong>
+                </div>
+
+                <form
+                    method="post"
+                    action="/admin/man_public_screen.php"
+                    onsubmit="return confirm('Cambiar el estado de la pantalla publica?');"
+                >
+                    <input type="hidden" name="enabled" value="<?= $publicScreenEnabled ? '0' : '1' ?>">
+
+                    <div class="actions">
+                        <button
+                            type="submit"
+                            class="btn <?= $publicScreenEnabled ? 'btn-danger' : 'btn-primary' ?>"
+                        >
+                            <?= $publicScreenEnabled ? 'Deshabilitar pantalla publica' : 'Habilitar pantalla publica' ?>
+                        </button>
+                        <a href="/admin/screen.php" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                            Abrir pantalla
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <div class="card">
-            <strong>En espera</strong><br>
-            <?= h((string)$waitlistedCount) ?>
-        </div>
+        <div class="card actions-top">
+            <h2>Todos los usuarios</h2>
+            <p class="muted">
+                Vista general de cuentas, entorno asignado y acciones disponibles segun el estado del usuario.
+            </p>
 
-        <div class="card">
-            <strong>Eliminados</strong><br>
-            <?= h((string)$deletedCount) ?>
+            <?php if (!$allUsers): ?>
+                <div class="empty-state">No hay usuarios registrados.</div>
+            <?php else: ?>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Alias</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Entorno</th>
+                                <th>Creado</th>
+                                <th>Aprobado</th>
+                                <th>Último login</th>
+                                <th class="actions-col">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($allUsers as $user): ?>
+                                <tr>
+                                    <td><?= h((string)$user['id']) ?></td>
+                                    <td><?= h((string)$user['alias']) ?></td>
+                                    <td><?= h((string)$user['role']) ?></td>
+                                    <td><?= h(userStatusLabel((string)$user['status'])) ?></td>
+                                    <td><?= h(envStatusLabel($user['env_status'] ?? null)) ?></td>
+                                    <td><?= h((string)$user['created_at']) ?></td>
+                                    <td><?= h((string)($user['approved_at'] ?? '-')) ?></td>
+                                    <td><?= h((string)($user['last_login_at'] ?? '-')) ?></td>
+                                    <td class="actions-col">
+                                        <?php if ($user['role'] === 'admin'): ?>
+                                            <span class="muted">Sin acciones para admin</span>
+
+                                        <?php elseif ($user['status'] === 'pending_review'): ?>
+                                            <form class="inline" method="post" action="/admin/approve_user.php">
+                                                <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
+                                                <button type="submit" class="btn btn-primary">Aprobar</button>
+                                            </form>
+
+                                            <form class="inline" method="post" action="/admin/send_to_waitlist.php">
+                                                <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
+                                                <button type="submit" class="btn btn-secondary">Enviar a espera</button>
+                                            </form>
+
+                                            <form
+                                                class="inline"
+                                                method="post"
+                                                action="/admin/delete_user.php"
+                                                onsubmit="return confirm('Eliminar este usuario?');"
+                                            >
+                                                <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
+                                                <button type="submit" class="btn btn-danger">Eliminar</button>
+                                            </form>
+
+                                        <?php elseif ($user['status'] === 'waitlisted'): ?>
+                                            <form class="inline" method="post" action="/admin/approve_user.php">
+                                                <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
+                                                <button type="submit" class="btn btn-primary">Aprobar si hay plaza</button>
+                                            </form>
+
+                                            <form
+                                                class="inline"
+                                                method="post"
+                                                action="/admin/delete_user.php"
+                                                onsubmit="return confirm('Eliminar este usuario?');"
+                                            >
+                                                <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
+                                                <button type="submit" class="btn btn-danger">Eliminar</button>
+                                            </form>
+
+                                        <?php elseif ($user['status'] === 'approved'): ?>
+                                            <form
+                                                class="inline"
+                                                method="post"
+                                                action="/admin/unapprove_user.php"
+                                                onsubmit="return confirm('Devolver este usuario a pendiente de revision?');"
+                                            >
+                                                <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
+                                                <button type="submit" class="btn btn-secondary">Desaprobar</button>
+                                            </form>
+
+                                            <form
+                                                class="inline"
+                                                method="post"
+                                                action="/admin/delete_user.php"
+                                                onsubmit="return confirm('Eliminar este usuario?');"
+                                            >
+                                                <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
+                                                <button type="submit" class="btn btn-danger">Eliminar</button>
+                                            </form>
+
+                                        <?php elseif ($user['status'] === 'deleted'): ?>
+                                            <span class="muted">Usuario eliminado</span>
+
+                                        <?php else: ?>
+                                            <span class="muted">Sin acciones</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
-
-    <h2>Pantalla pública</h2>
-    <p>
-        Estado actual:
-        <strong><?= $publicScreenEnabled ? 'Habilitada' : 'Deshabilitada' ?></strong>
-    </p>
-
-    <form method="post" action="/admin/man_public_screen.php"
-        onsubmit="return confirm('¿Seguro que quieres cambiar el estado de la pantalla pública?');">
-        <input type="hidden" name="enabled" value="<?= $publicScreenEnabled ? '0' : '1' ?>">
-        <button type="submit">
-            <?= $publicScreenEnabled ? 'Deshabilitar pantalla pública' : 'Habilitar pantalla pública' ?>
-        </button>
-        <p> <a href="/admin/screen.php" target="_blank">Abrir pantalla</a> </p>
-    </form>
-
-    <h2>Todos los usuarios</h2>
-
-    <?php if (!$allUsers): ?>
-        <p>No hay usuarios registrados.</p>
-    <?php else: ?>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Alias</th>
-                    <th>Rol</th>
-                    <th>Estado</th>
-                    <th>Entorno</th>
-                    <th>Creado</th>
-                    <th>Aprobado</th>
-                    <th>Último login</th>
-                    <th class="actions">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($allUsers as $user): ?>
-                    <tr>
-                        <td><?= h((string)$user['id']) ?></td>
-                        <td><?= h((string)$user['alias']) ?></td>
-                        <td><?= h((string)$user['role']) ?></td>
-                        <td><?= h(userStatusLabel((string)$user['status'])) ?></td>
-                        <td><?= h(envStatusLabel($user['env_status'] ?? null)) ?></td>
-                        <td><?= h((string)$user['created_at']) ?></td>
-                        <td><?= h((string)($user['approved_at'] ?? '-')) ?></td>
-                        <td><?= h((string)($user['last_login_at'] ?? '-')) ?></td>
-                        <td class="actions">
-                            <?php if ($user['role'] === 'admin'): ?>
-                                <em>Sin acciones para admin</em>
-
-                            <?php elseif ($user['status'] === 'pending_review'): ?>
-                                <form class="inline" method="post" action="/admin/approve_user.php">
-                                    <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
-                                    <button type="submit">Aprobar</button>
-                                </form>
-
-                                <form class="inline" method="post" action="/admin/send_to_waitlist.php">
-                                    <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
-                                    <button type="submit">Enviar a espera</button>
-                                </form>
-
-                                <form class="inline" method="post" action="/admin/delete_user.php"
-                                      onsubmit="return confirm('¿Eliminar este usuario?');">
-                                    <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
-                                    <button type="submit">Eliminar</button>
-                                </form>
-
-                            <?php elseif ($user['status'] === 'waitlisted'): ?>
-                                <form class="inline" method="post" action="/admin/approve_user.php">
-                                    <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
-                                    <button type="submit">Aprobar si hay plaza</button>
-                                </form>
-
-                                <form class="inline" method="post" action="/admin/delete_user.php"
-                                      onsubmit="return confirm('¿Eliminar este usuario?');">
-                                    <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
-                                    <button type="submit">Eliminar</button>
-                                </form>
-
-                            <?php elseif ($user['status'] === 'approved'): ?>
-    				<form class="inline" method="post" action="/admin/unapprove_user.php"
-          				onsubmit="return confirm('¿Devolver este usuario a pendiente de revisión?');">
-        				<input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
-        				<button type="submit">Desaprobar</button>
-    				</form>
-
-    				<form class="inline" method="post" action="/admin/delete_user.php"
-    				      onsubmit="return confirm('¿Eliminar este usuario?');">
-    				    <input type="hidden" name="user_id" value="<?= h((string)$user['id']) ?>">
-    				    <button type="submit">Eliminar</button>
-    				</form>
-                            <?php elseif ($user['status'] === 'deleted'): ?>
-                                <em>Usuario eliminado</em>
-
-                            <?php else: ?>
-                                <em>Sin acciones</em>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
 </body>
 </html>

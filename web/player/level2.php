@@ -304,7 +304,8 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
                 </div>
                 <div class="meta-box">
                     <strong>Formato esperado</strong>
-                    <p class="muted">Introduce la flag completa con el SSID exacto en el formato definido para el reto.</p>
+                    <p class="muted">Introduce la flag completa con el SSID exacto.</p>
+                    <p class="muted">Ejemplo: wifi_fantasma</p>
                 </div>
             </div>
 
