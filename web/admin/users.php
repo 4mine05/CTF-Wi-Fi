@@ -85,7 +85,7 @@ function envStatusLabel(?string $status): string
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel admin</title>
-    <link rel="stylesheet" href="/stylesheets/css.css">
+    <link rel="stylesheet" href="/stylesheet/styles.css">
 </head>
 <body>
     <div class="wrapper wide">
