@@ -23,6 +23,8 @@ $basePoints = 100;
 $hintPenalty = 10;
 $failedAttemptPenalty = 5;
 $maxUploadBytes = 10 * 1024 * 1024;
+$targetBssid = '52:54:46:33:48:53';
+$targetSsid = 'espectro-core';
 
 $hints = [
     1 => 'Sin un intercambio EAPOL valido no podras preparar un ataque offline.',
@@ -92,7 +94,17 @@ function findAircrackBinary(): ?string
     return $resolved !== '' ? $resolved : null;
 }
 
-function validateHandshakeCapture(string $capturePath): array
+function normalizeBssid(string $bssid): string
+{
+    return strtoupper(trim($bssid));
+}
+
+function normalizeSsid(string $ssid): string
+{
+    return trim($ssid);
+}
+
+function validateHandshakeCapture(string $capturePath, string $expectedBssid, ?string $expectedSsid = null): array
 {
     if (!function_exists('shell_exec')) {
         return [
@@ -122,34 +134,53 @@ function validateHandshakeCapture(string $capturePath): array
         ];
     }
 
-    $handshakeCount = 0;
-    $networkLabel = '';
+    $expectedBssid = normalizeBssid($expectedBssid);
+    $expectedSsid = $expectedSsid !== null ? normalizeSsid($expectedSsid) : null;
 
-    if (preg_match('/^\s*\d+\s+([0-9A-F:]{17})\s+(.+?)\s+WPA\d?\s*\(([1-9]\d*)\s+handshake/im', $output, $matches) === 1) {
-        $handshakeCount = (int)$matches[3];
-        $networkLabel = trim($matches[2]) . ' (' . strtoupper($matches[1]) . ')';
-    } elseif (preg_match('/\bWPA\d?\s*\(([1-9]\d*)\s+handshake/i', $output, $matches) === 1) {
-        $handshakeCount = (int)$matches[1];
-    }
+    /**
+     * Ejemplo de línea que queremos parsear:
+     * 1  52:54:46:33:48:53  espectro-core             WPA (1 handshake)
+     */
+    $pattern = '/^\s*\d+\s+([0-9A-F:]{17})\s+(.+?)\s+WPA\d?\s*\(([0-9]+)\s+handshake/im';
 
-    if ($handshakeCount > 0) {
-        $message = 'Captura valida: se ha detectado un handshake WPA/WPA2';
-        if ($networkLabel !== '') {
-            $message .= ' para ' . $networkLabel;
-        }
-        $message .= '.';
-
+    if (preg_match_all($pattern, $output, $matches, PREG_SET_ORDER) !== 1 && preg_match_all($pattern, $output, $matches, PREG_SET_ORDER) < 1) {
         return [
             'available' => true,
-            'ok' => true,
-            'message' => $message,
+            'ok' => false,
+            'message' => 'No se encontraron redes WPA/WPA2 con handshake en la captura.',
         ];
+    }
+
+    foreach ($matches as $match) {
+        $foundBssid = normalizeBssid($match[1]);
+        $foundSsid = normalizeSsid($match[2]);
+        $handshakeCount = (int)$match[3];
+
+        if ($foundBssid !== $expectedBssid) {
+            continue;
+        }
+
+        if ($expectedSsid !== null && $foundSsid !== $expectedSsid) {
+            return [
+                'available' => true,
+                'ok' => false,
+                'message' => 'La captura contiene un handshake del BSSID correcto, pero el SSID no coincide con la red objetivo.',
+            ];
+        }
+
+        if ($handshakeCount > 0) {
+            return [
+                'available' => true,
+                'ok' => true,
+                'message' => 'Captura válida: se ha detectado un handshake WPA/WPA2 de la red objetivo ' . $foundSsid . ' (' . $foundBssid . ').',
+            ];
+        }
     }
 
     return [
         'available' => true,
         'ok' => false,
-        'message' => 'El archivo .cap no contiene un handshake WPA/WPA2 valido. Revisa la captura antes de volver a subirla.',
+        'message' => 'La captura no contiene un handshake válido de la red objetivo (' . $expectedBssid . ').',
     ];
 }
 
@@ -261,7 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
                 $message = 'No se pudo verificar el archivo subido.';
                 $messageType = 'error';
             } else {
-                $validation = validateHandshakeCapture($tmpName);
+                $validation = validateHandshakeCapture($tmpName, $targetBssid, $targetSsid);
 
                 if (!$validation['available']) {
                     $message = $validation['message'];
