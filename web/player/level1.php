@@ -275,13 +275,13 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             <?php endif; ?>
 
             <p>
-                Durante una auditoría rutinaria del espectro aparecen tramas sospechosas.
-                No hay un SSID visible, pero sí actividad de clientes. Todo indica que alguien
+                Durante una auditoría rutinaria aparecen tramas sospechosas.
+                No hay un SSID visible, pero sí se detecta actividad de clientes. Todo indica que alguien
                 está operando un punto de acceso oculto dentro del entorno.
             </p>
 
             <p>
-                Tu misión en este nivel es identificar el punto de acceso responsable de esta
+                Tu misión es identificar el punto de acceso responsable de esta
                 infraestructura encubierta y entregar la flag con el <strong>BSSID exacto</strong>
                 de la red oculta.
             </p>
