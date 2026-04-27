@@ -31,9 +31,9 @@ $failedAttemptPenalty = 5;
 $flagHash = '$2y$12$U8mbCWzlfaXUQRZaT8RH3OgnE3fdmE57YMo9cBSH2Njd1VJUcednK'; /*Flag: 44:45:41:55:54:48*/
 
 $hints = [
-    1 => 'Usa el modo monitor',
-    2 => 'No puedes capturar lo que no estás mirando. Activa tu visión periférica sobre el objetivo y quédate en silencio recolectando balizas.',
-    3 => 'La red oculta está escondida en el sexto carril de los 13 carriles.',
+    1 => 'Inicia el modo monitor. Escucha el tráfico de ese canal y observa.',
+    2 => 'La red oculta está escondida en el sexto carril de los 13 carriles.',
+    3 => 'Utiliza airodump-ng y busca el canal y la interfaz correcta.',
 ];
 
 $message = '';
