@@ -31,9 +31,9 @@ $failedAttemptPenalty = 5;
 $flagHash = '$2y$12$q30g/BJWlZ8KocA4No1j8e4cv0Xc/Ce5W7CecCBtJAAh9llc0.jMa'; /*Flag: level2*/
 
 $hints = [
-    1 => 'El fantasma no dice su nombre, pero sus seguidores sí pueden delatarlo',
-    2 => 'Revisa bien la pista que dejaste en el nivel anterior: el BSSID contiene una palabra importante en hexadecimal.',
-    3 => 'Fuerza una reasociación del cliente y observa qué información revela.',
+    1 => 'El punto de acceso mantiene su SSID oculto, pero los clientes no siempre hacen lo mismo.',
+    2 => 'Revisa bien el BSSID, puede contener una palabra importante en hexadecimal.',
+    3 => 'Utilizar airodump-ng para buscar el BSSID, el canal y la interfaz ',
 ];
 
 $message = '';
@@ -283,7 +283,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
 
             <p>
                 Tu misión en este nivel es reconstruir la identidad de esa infraestructura
-                encubierta y entregar la flag con el <strong>SSID exacto</strong> de la red oculta.
+                encubierta, y entregar la flag con el <strong>SSID exacto</strong> de la red oculta.
             </p>
 
 
