@@ -64,19 +64,19 @@ $alias = $_SESSION['user']['alias'] ?? 'jugador';
             <ul>
                 <li>Cada nivel tiene un objetivo concreto.</li>
                 <li>Puedes solicitar pistas si las necesitas.
-                <li>-Cada pista utilizada reduce la puntuación del nivel.</li>
-                <li>-Cada intento fallido también aplica penalización.</li>
-                <li>-Cada reto resuelto desbloqueará el siguiente.</li>
+                <li>Cada pista utilizada reduce la puntuación del nivel.</li>
+                <li>Cada intento fallido también aplica penalización.</li>
+                <li>Cada reto resuelto desbloqueará el siguiente.</li>
                 <li>El objetivo es progresar con la mayor puntuación posible.</li>
             </ul>
             <br>
             <h2>Cuando no sepas cómo continuar</h2>
             <p>Si te bloqueas en un nivel, hay varios caminos que puedes tomar:</p>
             <ul>
-                <li>-Revisar cuidadosamente el contexto y el objetivo del reto.</li>
-                <li>-Consultar los comandos sugeridos para ese nivel.</li>
-                <li>-Leer la documentación o los recursos recomendados.</li>
-                <li>-Pedir una pista, sabiendo que reducirá la puntuación obtenida.</li>
+                <li>Revisar cuidadosamente el contexto y el objetivo del reto.</li>
+                <li>Consultar los comandos sugeridos para ese nivel.</li>
+                <li>Leer la documentación o los recursos recomendados.</li>
+                <li>Pedir una pista, sabiendo que reducirá la puntuación obtenida.</li>
             </ul>
         </div>
         <br>

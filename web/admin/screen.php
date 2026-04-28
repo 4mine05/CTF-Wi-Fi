@@ -52,7 +52,7 @@ $stmt = $pdo->query("
     JOIN users u ON u.id = s.user_id
     WHERE u.status = 'approved'
     ORDER BY s.points DESC, s.levels_completed DESC
-    LIMIT 10
+    LIMIT 5
 ");
 $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>

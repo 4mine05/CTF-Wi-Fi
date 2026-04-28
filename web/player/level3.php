@@ -18,6 +18,9 @@ if ($status !== 'approved') {
 $userId = (int)($_SESSION['user']['id'] ?? 0);
 $alias = (string)($_SESSION['user']['alias'] ?? 'jugador');
 
+/* Restringir acceso a niveles no desbloqueados */
+ensureLevelUnlocked($pdo, $userId, 3);
+
 $levelNumber = 3;
 $basePoints = 100;
 $hintPenalty = 10;
@@ -334,14 +337,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
 
                         $pdo->commit();
 
-                        if (file_exists(__DIR__ . '/level4.php')) {
-                            header('Location: /player/level4.php');
-                            exit;
-                        }
-
                         $_SESSION['level3_completed_message'] = $validation['message'];
-                        header('Location: /player/dashboard.php');
+                        header('Location: /player/level3.php');
                         exit;
+
                     } catch (Throwable $e) {
                         $pdo->rollBack();
                         $message = 'No se pudo guardar el progreso del nivel.';

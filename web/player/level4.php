@@ -18,32 +18,31 @@ if ($status !== 'approved') {
 $userId = (int)($_SESSION['user']['id'] ?? 0);
 $alias = (string)($_SESSION['user']['alias'] ?? 'jugador');
 
-
-
-$levelNumber = 1;
-$basePoints = 50;
+$levelNumber = 4;
+$basePoints = 125;
 $hintPenalty = 10;
 $failedAttemptPenalty = 5;
+$targetBssid = '52:54:46:33:48:53';
+$targetSsid = 'espectro-core';
 
 /*
- * Sustituye este hash por el hash real de tu flag.
- * Ejemplo para generarlo:
- * php -r "echo password_hash('<tu_flag>', PASSWORD_DEFAULT), PHP_EOL;"
+ * El jugador debe obtener esta PSK con aircrack-ng.
+ * Hash de la flag/PSK esperada: espectro2026
  */
-$flagHash = '$2y$12$U8mbCWzlfaXUQRZaT8RH3OgnE3fdmE57YMo9cBSH2Njd1VJUcednK'; /*Flag: 44:45:41:55:54:48*/
+$flagHash = '$2y$12$j605YyfAiV22DsPRebIWBuXgyH9bWW1wG2p3QZjO7CeQxm0FoWgIK';
 
 $hints = [
-    1 => 'Inicia el modo monitor. Escucha el tráfico de ese canal y observa.',
-    2 => 'La red oculta está escondida en el sexto carril de los 13 carriles.',
-    3 => 'Utiliza airodump-ng y busca el canal y la interfaz correcta.',
+    1 => 'Ya tienes el handshake: ahora no necesitas atacar al AP, sino probar claves offline contra la captura.',
+    2 => 'El contenedor tiene un archivo .zip de apoyo. Busca paquetes comprimidos en /opt/ctf, /home y /tmp.',
+    3 => 'Extrae el zip con unzip. La palabra que lo abre ya aparecio en la historia: el fantasma tenia nombre.',
 ];
 
 $message = '';
 $messageType = 'info';
 
-/**
- * Asegurar filas mínimas
- */
+/* Restringir acceso a niveles no desbloqueados */
+ensureLevelUnlocked($pdo, $userId, 4);
+
 $pdo->prepare("
     INSERT IGNORE INTO scores (user_id, points, levels_completed, hints_used, failed_attempts)
     VALUES (?, 0, 0, 0, 0)
@@ -108,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
 
                 $pdo->commit();
 
-                header('Location: /player/level1.php');
+                header('Location: /player/level4.php');
                 exit;
             } catch (Throwable $e) {
                 $pdo->rollBack();
@@ -121,88 +120,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
         }
     }
 
-    if ($action === 'submit_flag') {
-        $submittedFlag = trim((string)($_POST['flag'] ?? ''));
+    if ($action === 'submit_psk') {
+        $submittedPsk = trim((string)($_POST['psk'] ?? ''));
 
-        if ($submittedFlag === '') {
-            $message = 'Debes introducir una flag.';
+        if ($submittedPsk === '') {
+            $message = 'Debes introducir la PreSharedKey encontrada.';
             $messageType = 'error';
-        } elseif (!$flagHash) {
-            $message = 'Debes configurar primero el hash real de la flag en level1.php.';
-            $messageType = 'error';
+        } elseif (password_verify($submittedPsk, $flagHash)) {
+            $finalPoints = max(
+                0,
+                $basePoints - ($hintsUsed * $hintPenalty) - ($failedAttempts * $failedAttemptPenalty)
+            );
+
+            $pdo->beginTransaction();
+
+            try {
+                $pdo->prepare("
+                    UPDATE user_level_progress
+                    SET completed = 1,
+                        points_earned = ?,
+                        completed_at = NOW(),
+                        last_attempt_at = NOW(),
+                        updated_at = NOW()
+                    WHERE user_id = ? AND level_number = ?
+                ")->execute([$finalPoints, $userId, $levelNumber]);
+
+                $pdo->prepare("
+                    UPDATE scores
+                    SET points = points + ?,
+                        levels_completed = levels_completed + 1,
+                        updated_at = NOW()
+                    WHERE user_id = ?
+                ")->execute([$finalPoints, $userId]);
+
+                $pdo->commit();
+
+                $_SESSION['level4_completed_message'] = 'Has obtenido la PreSharedKey correcta y completado el nivel 4.';
+                header('Location: /player/level4.php');
+                exit;
+            } catch (Throwable $e) {
+                $pdo->rollBack();
+                $message = 'No se pudo guardar el progreso del nivel.';
+                $messageType = 'error';
+            }
         } else {
-            if (password_verify($submittedFlag, $flagHash)) {
-                $finalPoints = max(
-                    0,
-                    $basePoints - ($hintsUsed * $hintPenalty) - ($failedAttempts * $failedAttemptPenalty)
-                );
+            $pdo->beginTransaction();
 
-                $pdo->beginTransaction();
+            try {
+                $pdo->prepare("
+                    UPDATE user_level_progress
+                    SET failed_attempts = failed_attempts + 1,
+                        last_attempt_at = NOW(),
+                        updated_at = NOW()
+                    WHERE user_id = ? AND level_number = ?
+                ")->execute([$userId, $levelNumber]);
 
-                try {
-                    $pdo->prepare("
-                        UPDATE user_level_progress
-                        SET completed = 1,
-                            points_earned = ?,
-                            completed_at = NOW(),
-                            last_attempt_at = NOW(),
-                            updated_at = NOW()
-                        WHERE user_id = ? AND level_number = ?
-                    ")->execute([$finalPoints, $userId, $levelNumber]);
+                $pdo->prepare("
+                    UPDATE scores
+                    SET failed_attempts = failed_attempts + 1,
+                        updated_at = NOW()
+                    WHERE user_id = ?
+                ")->execute([$userId]);
 
-                    $pdo->prepare("
-                        UPDATE scores
-                        SET points = points + ?,
-                            levels_completed = levels_completed + 1,
-                            updated_at = NOW()
-                        WHERE user_id = ?
-                    ")->execute([$finalPoints, $userId]);
+                $pdo->commit();
 
-                    $pdo->prepare("
-                        INSERT IGNORE INTO user_level_progress
-                            (user_id, level_number, completed, hints_used, failed_attempts, points_earned)
-                        VALUES (?, 2, 0, 0, 0, 0)
-                    ")->execute([$userId]);
-
-                    $pdo->commit();
-
-                    $_SESSION['level1_completed_message'] = 'Has completado el nivel 1 correctamente.';
-                    header('Location: /player/level1.php');
-                    exit;
-                    
-                } catch (Throwable $e) {
-                    $pdo->rollBack();
-                    $message = 'No se pudo guardar el progreso del nivel.';
-                    $messageType = 'error';
-                }
-            } else {
-                $pdo->beginTransaction();
-
-                try {
-                    $pdo->prepare("
-                        UPDATE user_level_progress
-                        SET failed_attempts = failed_attempts + 1,
-                            last_attempt_at = NOW(),
-                            updated_at = NOW()
-                        WHERE user_id = ? AND level_number = ?
-                    ")->execute([$userId, $levelNumber]);
-
-                    $pdo->prepare("
-                        UPDATE scores
-                        SET failed_attempts = failed_attempts + 1,
-                            updated_at = NOW()
-                        WHERE user_id = ?
-                    ")->execute([$userId]);
-
-                    $pdo->commit();
-
-                    header('Location: /player/level1.php?error=flag');
-                    exit;
-                } catch (Throwable $e) {
-                    $pdo->rollBack();
-                    $message = 'No se pudo registrar el intento fallido.';
-                    $messageType = 'error';
-                }
+                header('Location: /player/level4.php?error=flag');
+                exit;
+            } catch (Throwable $e) {
+                $pdo->rollBack();
+                $message = 'No se pudo registrar el intento fallido.';
+                $messageType = 'error';
             }
         }
     }
@@ -230,8 +217,14 @@ $currentLevelPoints = max(
     $basePoints - ($hintsUsed * $hintPenalty) - ($failedAttempts * $failedAttemptPenalty)
 );
 
+if ($completed && isset($_SESSION['level4_completed_message'])) {
+    $message = (string)$_SESSION['level4_completed_message'];
+    $messageType = 'success';
+    unset($_SESSION['level4_completed_message']);
+}
+
 if (isset($_GET['error']) && $_GET['error'] === 'flag') {
-    $message = 'Flag incorrecta. Se ha aplicado una penalización.';
+    $message = 'PreSharedKey incorrecta. Se ha aplicado una penalizacion.';
     $messageType = 'error';
 }
 ?>
@@ -240,7 +233,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nivel 1 - Black beacon</title>
+    <title>Nivel 4 - La llave del espectro</title>
     <link rel="stylesheet" href="/stylesheet/styles.css">
 </head>
 <body>
@@ -250,15 +243,15 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             Jugador: <strong><?= h($alias) ?></strong>
         </div>
         <div>
-            <a href="/player/intro.php">Volver a la introducción</a> |
+            <a href="/player/intro.php">Volver a la introduccion</a> |
             <a href="/player/dashboard.php">Volver al panel</a>
         </div>
     </div>
 
     <div class="grid">
         <div class="card">
-            <div class="eyebrow">Nivel 1</div>
-            <h1>Black beacon</h1>
+            <div class="eyebrow">Nivel 4</div>
+            <h1>La llave del espectro</h1>
 
             <?php if ($message !== ''): ?>
                 <div class="message <?= h($messageType) ?>">
@@ -273,52 +266,57 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             <?php endif; ?>
 
             <p>
-                Durante una auditoría rutinaria aparecen tramas sospechosas.
-                No hay un SSID visible, pero sí se detecta actividad de clientes. Todo indica que alguien
-                está operando un punto de acceso oculto dentro del entorno.
+                El handshake del nivel anterior ya confirma que la red <strong><code><?= h($targetSsid) ?></code></strong>
+                usa una clave compartida. Ahora la investigacion pasa a ser offline: no necesitas seguir
+                golpeando al punto de acceso, necesitas probar candidatos contra la captura.
             </p>
 
             <p>
-                Tu misión es identificar el punto de acceso responsable de esta
-                infraestructura encubierta y entregar la flag con el <strong>BSSID exacto</strong>
-                de la red oculta.
+                En el contenedor hay un paquete comprimido preparado por el equipo anterior. Dentro encontraras
+                un diccionario pequeno para lanzar un ataque de fuerza bruta con <a href="https://aircrack-ng.org/doku.php?id=aircrack-ng" target="_blank"><code>aircrack-ng</code></a>.
+            </p>
+
+            <p>
+                Tu objetivo es encontrar la <strong>PreSharedKey exacta</strong> de la red objetivo y enviarla
+                en este portal.
             </p>
 
             <div class="helper-box">
                 <p><strong>Ayuda</strong></p>
                 <p class="muted">Comandos que puedes necesitar para resolver el reto:</p>
                 <ul class="muted">
-                    <li><a href="https://aircrack-ng.org/doku.php?id=airmon-ng" target="_blank"><code>airmon-ng</code></a></li>
-                    <li><a href="https://aircrack-ng.org/doku.php?id=airodump-ng" target="_blank"><code>airodump-ng</code></a></li>
+                    <li><a href="https://www.redhat.com/en/blog/linux-find-command" target="_blank"><code>find</code></a></li>
+                    <li><a href="https://www.geeksforgeeks.org/linux-unix/unzip-command-in-linux/" target="_blank"><code>unzip</code></a></li>
+                    <li><a href="https://aircrack-ng.org/doku.php?id=aircrack-ng" target="_blank"><code>aircrack-ng</code></a></li>
                 </ul>
             </div>
 
             <div class="meta">
                 <div class="meta-box">
-                    <strong>Objetivo</strong>
-                    <p class="muted">Descubrir el BSSID exacto de la red WiFi oculta.</p>
+                    <strong>Objetivo tecnico</strong>
+                    <p class="muted">Usar el handshake capturado y un diccionario para recuperar la WPA2 PreSharedKey.</p>
                 </div>
                 <div class="meta-box">
-                    <strong>Formato esperado</strong>
-                    <p class="muted">Introduce la flag con el BSSID exacto.</p>
-                    <p class="muted">Ejemplo: 00:AA:11:BB:22:CC</p>
+                    <strong>Red objetivo</strong>
+                    <p class="muted">SSID: <code><?= h($targetSsid) ?></code></p>
+                    <p class="muted">BSSID: <code><?= h($targetBssid) ?></code></p>
                 </div>
             </div>
 
             <?php if (!$completed): ?>
                 <form method="post">
-                    <label for="flag"><strong>Enviar flag</strong></label>
+                    <label for="psk"><strong>Enviar PreSharedKey</strong></label>
                     <input
                         type="text"
-                        name="flag"
-                        id="flag"
-                        placeholder="Introduce aquí la flag del nivel 1 (Ejemplo: 00:AA:11:BB:22:CC)"
+                        name="psk"
+                        id="psk"
+                        placeholder="Introduce aqui la PSK encontrada"
                         autocomplete="off"
                     >
 
                     <div class="actions">
-                        <button type="submit" name="action" value="submit_flag" class="btn btn-primary">
-                            Enviar flag
+                        <button type="submit" name="action" value="submit_psk" class="btn btn-primary">
+                            Validar PSK
                         </button>
 
                         <?php if ($hintsUsed < count($hints)): ?>
@@ -330,27 +328,31 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
                 </form>
             <?php else: ?>
                 <div class="actions actions-top">
-                    <?php if (file_exists(__DIR__ . '/level2.php')): ?>
-                        <a href="/player/level2.php" class="btn btn-primary">Ir al nivel 2</a>
-                    <?php endif; ?>
-                    <a href="/player/dashboard.php" class="btn btn-secondary">Volver al panel</a>
+                    <a href="/player/dashboard.php" class="btn btn-primary">Volver al panel</a>
                 </div>
             <?php endif; ?>
         </div>
 
         <div class="card">
             <h2>Estado del nivel</h2>
-            <p><strong>Puntuación base:</strong> <?= h((string)$basePoints) ?> puntos</p>
+            <p><strong>Puntuacion base:</strong> <?= h((string)$basePoints) ?> puntos</p>
             <p><strong>Puntos actuales del nivel:</strong> <?= h((string)$currentLevelPoints) ?> puntos</p>
             <p><strong>Pistas usadas:</strong> <?= h((string)$hintsUsed) ?> / <?= h((string)count($hints)) ?></p>
             <p><strong>Intentos fallidos:</strong> <?= h((string)$failedAttempts) ?></p>
 
             <hr>
 
+            <h3>Material esperado</h3>
+            <p class="muted">Handshake capturado en el nivel 3.</p>
+            <p class="muted">Diccionario comprimido dentro del contenedor del jugador.</p>
+            <p class="muted">Validacion esperada: PSK exacta de la red objetivo.</p>
+
+            <hr>
+
             <h3>Pistas desbloqueadas</h3>
 
             <?php if ($hintsUsed === 0): ?>
-                <p class="muted">Todavía no has desbloqueado ninguna pista.</p>
+                <p class="muted">Todavia no has desbloqueado ninguna pista.</p>
             <?php else: ?>
                 <?php for ($i = 1; $i <= $hintsUsed; $i++): ?>
                     <div class="hint">
@@ -364,7 +366,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
 
             <h3>Penalizaciones</h3>
             <p class="muted">Cada pista utilizada resta <?= h((string)$hintPenalty) ?> puntos.</p>
-            <p class="muted">Cada intento fallido resta <?= h((string)$failedAttemptPenalty) ?> puntos.</p>
+            <p class="muted">Cada PSK incorrecta resta <?= h((string)$failedAttemptPenalty) ?> puntos.</p>
         </div>
     </div>
 </div>

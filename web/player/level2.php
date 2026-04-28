@@ -18,6 +18,9 @@ if ($status !== 'approved') {
 $userId = (int)($_SESSION['user']['id'] ?? 0);
 $alias = (string)($_SESSION['user']['alias'] ?? 'jugador');
 
+/* Restringir acceso a niveles no desbloqueados */
+ensureLevelUnlocked($pdo, $userId, 2);
+
 $levelNumber = 2;
 $basePoints = 75;
 $hintPenalty = 10;
@@ -28,7 +31,7 @@ $failedAttemptPenalty = 5;
  * Ejemplo para generarlo:
  * php -r "echo password_hash('CTF{AA:BB:CC:DD:EE:FF}', PASSWORD_DEFAULT), PHP_EOL;"
  */
-$flagHash = '$2y$12$q30g/BJWlZ8KocA4No1j8e4cv0Xc/Ce5W7CecCBtJAAh9llc0.jMa'; /*Flag: level2*/
+$flagHash = '$2y$12$aYIcnP94cTc9bMsaj7TKx.W04egUnQyDrVGiDlCbqCeVB/PzLN66y'; /*Flag: "Black_Beacon"*/
 
 $hints = [
     1 => 'El punto de acceso mantiene su SSID oculto, pero los clientes no siempre hacen lo mismo.',
@@ -164,14 +167,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
 
                     $pdo->commit();
 
-                    if (file_exists(__DIR__ . '/level3.php')) {
-                        header('Location: /player/level3.php');
-                        exit;
-                    }
-
                     $_SESSION['level2_completed_message'] = 'Has completado el nivel 2 correctamente.';
-                    header('Location: /player/dashboard.php');
+                    header('Location: /player/level2.php');
                     exit;
+                    
                 } catch (Throwable $e) {
                     $pdo->rollBack();
                     $message = 'No se pudo guardar el progreso del nivel.';
@@ -242,7 +241,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nivel 2 - Poner nombre al fantasma</title>
+    <title>Nivel 2 - Ghost Name</title>
     <link rel="stylesheet" href="/stylesheet/styles.css">
 </head>
 <body>
@@ -260,7 +259,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
     <div class="grid">
         <div class="card">
             <div class="eyebrow">Nivel 2</div>
-            <h1>Poner nombre al fantasma</h1>
+            <h1>Ghost Name</h1>
 
             <?php if ($message !== ''): ?>
                 <div class="message <?= h($messageType) ?>">

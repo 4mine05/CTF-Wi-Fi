@@ -51,7 +51,7 @@ function countReservedSlots(PDO $pdo): int
     return (int)$stmt->fetchColumn();
 }
 
-
+/* Requerir inicio de sesión */
 function requireLogin(): void
 {
     if (empty($_SESSION['user'])) {
@@ -60,6 +60,7 @@ function requireLogin(): void
     }
 }
 
+/* Redirigir según el rol */
 function redirectByRole(): void
 {
     if (empty($_SESSION['user'])) {
@@ -84,6 +85,7 @@ function redirectByRole(): void
     exit;
 }
 
+/* Generar hash Linux de la contraseña para el usuario */
 function makeLinuxPasswordHash(string $password): string
 {
     $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./';
@@ -100,4 +102,30 @@ function makeLinuxPasswordHash(string $password): string
     }
 
     return $hash;
+}
+
+/* Restringir acceso a niveles no desbloqueados */
+function ensureLevelUnlocked(PDO $pdo, int $userId, int $levelNumber): void
+{
+    if ($levelNumber <= 1) {
+        return;
+    }
+
+    $previousLevel = $levelNumber - 1;
+
+    $stmt = $pdo->prepare("
+        SELECT completed
+        FROM user_level_progress
+        WHERE user_id = ? AND level_number = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$userId, $previousLevel]);
+
+    $previousCompleted = (int)($stmt->fetchColumn() ?: 0) === 1;
+
+    if (!$previousCompleted) {
+        $_SESSION['level_access_error'] = 'Primero debes completar el nivel ' . $previousLevel . ' para acceder al nivel ' . $levelNumber . '.';
+        header('Location: /player/dashboard.php');
+        exit;
+    }
 }
