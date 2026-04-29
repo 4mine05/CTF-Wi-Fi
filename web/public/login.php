@@ -3,11 +3,16 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../lib/bootstrap.php';
 
-if (!empty($_SESSION['user'])) {
-    redirectByRole();
+$error = '';
+
+if (isset($_SESSION['login_error'])) {
+    $error = (string)$_SESSION['login_error'];
+    unset($_SESSION['login_error']);
 }
 
-$error = '';
+if (!empty($_SESSION['user']) && $error === '') {
+    redirectByRole();
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $alias = trim($_POST['alias'] ?? '');

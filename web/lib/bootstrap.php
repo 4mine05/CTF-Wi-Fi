@@ -13,13 +13,16 @@ function h(string $value): string
 function requireAdmin(): void
 {
     if (empty($_SESSION['user'])) {
-        http_response_code(403);
-        exit('Debes iniciar sesión.');
+        $_SESSION['login_error'] = 'Debes iniciar sesión.';
+        header('Location: /public/login.php');
+        exit;
     }
 
     if (($_SESSION['user']['role'] ?? '') !== 'admin') {
-        http_response_code(403);
-        exit('Acceso restringido al administrador.');
+        $_SESSION['login_error'] = 'Acceso restringido al administrador.';
+        unset($_SESSION['user']);
+        header('Location: /public/login.php');
+        exit;
     }
 }
 
@@ -55,8 +58,9 @@ function countReservedSlots(PDO $pdo): int
 function requireLogin(): void
 {
     if (empty($_SESSION['user'])) {
-        http_response_code(403);
-        exit('Debes iniciar sesión.');
+        $_SESSION['login_error'] = 'Debes iniciar sesión.';
+        header('Location: /public/login.php');
+        exit;
     }
 }
 
