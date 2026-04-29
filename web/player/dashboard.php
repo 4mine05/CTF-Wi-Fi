@@ -42,8 +42,19 @@ $status = (string)($_SESSION['user']['status'] ?? '');
 $accountStatusLabel = dashboardAccountStatusLabel($status);
 $envStatusRaw = null;
 $envStatusLabel = 'No disponible';
+
 $message = '';
 $messageType = 'info';
+$hasLevelAccessError = false;
+$levelAccessMessage = '';
+if (isset($_SESSION['level_access_error'])) {
+    $message = (string)$_SESSION['level_access_error'];
+    $messageType = 'error';
+    $hasLevelAccessError = true;
+    $levelAccessMessage = $message;
+    unset($_SESSION['level_access_error']);
+}
+
 $showStartAction = false;
 $showSshCommand = false;
 $sshCommand = '';
