@@ -5,7 +5,7 @@ RUN apt update && apt install -y \
         nano vim \
         python3 \
         iproute2 iw wireless-tools net-tools \
-        aircrack-ng reaver bully cowpatty hashcat \
+        aircrack-ng\ 
         openssh-server sudo \
         pciutils \
         wpasupplicant man-db isc-dhcp-client iputils-ping \

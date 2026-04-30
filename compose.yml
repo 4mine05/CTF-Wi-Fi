@@ -10,11 +10,6 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
-#############################
-    # Temporalmente !!!!
-    ports:
-      - "3306:3306"
-#############################
     networks:
       - ctf_net
     # Check if the database is ready

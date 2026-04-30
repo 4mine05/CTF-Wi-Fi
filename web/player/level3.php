@@ -27,7 +27,7 @@ $hintPenalty = 10;
 $failedAttemptPenalty = 5;
 $maxUploadBytes = 10 * 1024 * 1024;
 $targetBssid = '52:54:46:33:48:53';
-$targetSsid = 'espectro-core';
+$targetSsid = 'TP-Link_23412';
 
 $hints = [
     1 => 'Sin un intercambio EAPOL valido no podras preparar un ataque offline.',
@@ -142,7 +142,7 @@ function validateHandshakeCapture(string $capturePath, string $expectedBssid, ?s
 
     /**
      * Ejemplo de línea que queremos parsear:
-     * 1  52:54:46:33:48:53  espectro-core             WPA (1 handshake)
+     * 1  52:54:46:33:48:53  TP-Link_23412             WPA (1 handshake)
      */
     $pattern = '/^\s*\d+\s+([0-9A-F:]{17})\s+(.+?)\s+WPA\d?\s*\(([0-9]+)\s+handshake/im';
 
@@ -441,7 +441,7 @@ $currentLevelPoints = max(
             <?php endif; ?>
 
             <p>
-                La investigación revela una segunda red, esta vez protegida con WPA2.
+                La investigación revela una segunda red, identificada como <strong><code><?= h($targetSsid) ?></code></strong>, esta vez protegida con WPA2.
                 A diferencia de la anterior, esta parece ser el verdadero punto de entrada a la infraestructura
             </p>
 
@@ -461,6 +461,7 @@ $currentLevelPoints = max(
                     <li><a href="https://aircrack-ng.org/doku.php?id=airodump-ng" target="_blank"><code>airodump-ng</code></a></li>
                     <li><a href="https://aircrack-ng.org/doku.php?id=aireplay-ng" target="_blank"><code>aireplay-ng</code></a></li>
                     <li><a href="https://aircrack-ng.org/doku.php?id=aircrack-ng" target="_blank"><code>aircrack-ng</code></a></li>
+                    <li><a href="https://www.geeksforgeeks.org/linux-unix/linux-sftp-command-with-example/" target="_blank"><code>sftp</code></a></li>
                 </ul>
             </div>
 

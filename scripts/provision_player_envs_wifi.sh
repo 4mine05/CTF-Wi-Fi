@@ -27,10 +27,10 @@ SSH_HOST_VALUE="192.168.220.10"
 SSH_PORT_START=2200
 
 # Primeras interfaces reservadas para el host y el laboratorio CTF.
-# Quedarán libres en el host como wlan0..wlan4.
-HOST_WIFI_RESERVE=5
+# Quedaran libres en el host como wlan0..wlan9.
+HOST_WIFI_RESERVE=20
 
-# Si quieres dejar 1 o 2 radios extra además de las 5 del host, súbelo.
+# Si quieres dejar 1 o 2 radios extra ademas de las 10 del host, subelo.
 EXTRA_MARGIN=0
 
 # ==========================================

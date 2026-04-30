@@ -38,11 +38,11 @@ sudo apt update && sudo apt install mysql-client -y
   *Es necesario cerrar sesión y volver a entrar para aplicar el cambio.*
 ### 3. Herramientas necessarias
   ```bash
-  sudo apt install wpasupplicant isc-dhcp-client iproute2 iw wireless-tools reaver bully hostapd dnsmasq -y
+  sudo apt install wpasupplicant isc-dhcp-client iproute2 iw  hostapd dnsmasq -y
   ```
 ## Construir imagen base:
 ```bash
-sudo docker build -t ctf-player-base:1.0 ./Build
+sudo docker build -t ctf-player-base:1.0 -f Build/Dockerfile .
 ```
 
 
