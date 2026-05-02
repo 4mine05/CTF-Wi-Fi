@@ -34,8 +34,8 @@ $failedAttemptPenalty = 5;
 $flagHash = '$2y$12$aYIcnP94cTc9bMsaj7TKx.W04egUnQyDrVGiDlCbqCeVB/PzLN66y'; /*Flag: "Black_Beacon"*/
 
 $hints = [
-    1 => 'El punto de acceso mantiene su SSID oculto, pero los clientes no siempre hacen lo mismo.',
-    2 => 'Revisa bien el BSSID, puede contener una palabra importante en hexadecimal.',
+    1 => 'El punto de acceso mantiene su SSID oculto, se puede ver que es diferente al resto.',
+    2 => 'Revisa bien el BSSID, puede contener una pista importante en hexadecimal.',
     3 => 'Utilizar airodump-ng para buscar el BSSID, el canal y la interfaz ',
 ];
 
@@ -284,8 +284,8 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
                 Tu misión en este nivel es reconstruir la identidad de esa infraestructura
                 encubierta, y entregar la flag con el <strong>SSID exacto</strong> de la red oculta.
             </p>
-
-
+            <p>Recuerda mantener los canales siempre activos.</p>
+            
             <div class="helper-box">
                 <p><strong>Ayuda</strong></p>
                 <p class="muted">Comandos que puedes necesitar para resolver el reto:</p>
