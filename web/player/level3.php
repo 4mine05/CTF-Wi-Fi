@@ -30,9 +30,9 @@ $targetBssid = '52:54:46:33:48:53';
 $targetSsid = 'TP-Link_23412';
 
 $hints = [
-    1 => 'Sin un intercambio EAPOL valido no podras preparar un ataque offline.',
-    2 => 'Si el cliente no genera trafico por si solo, fuerza una nueva asociacion para provocar el handshake.',
-    3 => 'Antes de subir la captura, revisala con aircrack-ng: el servidor espera detectar al menos un handshake valido.',
+    1 => 'Si el cliente no genera trafico por si solo, un apretón de manos podria ayudar.',
+    2 => 'Verfica que tienes el archivo y que el handsake coindica con aircrack',
+    3 => 'Recuerda que con sftp las opciones se definen antes de la conexión',
 ];
 
 $message = '';
@@ -441,17 +441,17 @@ $currentLevelPoints = max(
             <?php endif; ?>
 
             <p>
-                La investigación revela una segunda red, identificada como <strong><code><?= h($targetSsid) ?></code></strong>, esta vez protegida con WPA2.
-                A diferencia de la anterior, esta parece ser el verdadero punto de entrada a la infraestructura
+                La investigación revela una segunda red, identificada como <strong><code><?= h($targetSsid) ?></code></strong>, esta vez esta protegida con WPA2.
+                A diferencia de la anterior, parece ser el verdadero punto de entrada a la infraestructura.
             </p>
 
             <p>
-                En este nivel no basta con verla, necesitas capturar la prueba criptográfica que permita atacarla fuera de línea.
+                En este nivel no basta con verla, necesitas capturar la prueba que permita atacarla.
             </p>
 
             <p>
                 Tu objetivo es subir un archivo <strong><code>.cap</code></strong> con un <strong>handshake WPA2 valido</strong>
-                para preparar una intrusion controlada.
+                para preparar una intrusión controlada.
             </p>
 
             <div class="helper-box">
@@ -468,10 +468,10 @@ $currentLevelPoints = max(
             <div class="meta">
                 <div class="meta-box">
                     <strong>Objetivo tecnico</strong>
-                    <p class="muted">Capturar y subir un handshake WPA2 valido en un archivo <code>.cap</code>.</p>
+                    <p class="muted">Capturar y subir un handshake WPA2 valido en un archivo <code>.cap</code> a través de sftp.</p>
                 </div>
                 <div class="meta-box">
-                    <strong>Validacion</strong>
+                    <strong>Validación</strong>
                     <p class="muted">Se analizará tu captura para determinar si es un handshake WPA2 de la red objetivo es válido.</p>
                 </div>
             </div>
