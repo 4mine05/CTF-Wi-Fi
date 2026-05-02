@@ -32,9 +32,9 @@ $targetSsid = 'espectro-core';
 $flagHash = '$2y$12$j605YyfAiV22DsPRebIWBuXgyH9bWW1wG2p3QZjO7CeQxm0FoWgIK';
 
 $hints = [
-    1 => 'Ya tienes el handshake: ahora no necesitas atacar al AP, sino probar claves offline contra la captura.',
-    2 => 'El contenedor tiene un archivo .zip de apoyo. Busca paquetes comprimidos en /opt/ctf, /home y /tmp.',
-    3 => 'Extrae el zip con unzip. La palabra que lo abre ya aparecio en la historia: el fantasma tenia nombre.',
+    1 => 'El contenedor tiene un archivo .zip de apoyo. Busca el paquete comprimido en /opt/ctf, /home y /tmp.',
+    2 => 'Extrae el zip con unzip. La contraseña ya ha aparecido en la historia: Es el nombre obtenido(BSSID) del primer nivel.',
+    3 => 'Ya has descubrierto que el nombre del primer nivel es Black_Beacon. Ahora un ataque de fuerza bruta con aircrack-ng -w password.lst *.cap podria revelar el contenido',
 ];
 
 $message = '';
@@ -267,13 +267,13 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
 
             <p>
                 El handshake del nivel anterior ya confirma que la red <strong><code><?= h($targetSsid) ?></code></strong>
-                usa una clave compartida. Ahora la investigacion pasa a ser offline: no necesitas seguir
+                usa una clave compartida. Ahora la investigacion pasa a tener otro objetivo: no necesitas seguir
                 golpeando al punto de acceso, necesitas probar candidatos contra la captura.
             </p>
 
             <p>
-                En el contenedor hay un paquete comprimido preparado por el equipo anterior. Dentro encontraras
-                un diccionario pequeno para lanzar un ataque de fuerza bruta con <a href="https://aircrack-ng.org/doku.php?id=aircrack-ng" target="_blank"><code>aircrack-ng</code></a>.
+                En el contenedor hay un paquete comprimido. Dentro encontrarás
+                un diccionari para lanzar un ataque de fuerza bruta con <a href="https://aircrack-ng.org/doku.php?id=aircrack-ng" target="_blank"><code>aircrack-ng</code></a>.
             </p>
 
             <p>
