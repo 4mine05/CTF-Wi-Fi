@@ -33,7 +33,7 @@ $flagHash = '$2y$12$j605YyfAiV22DsPRebIWBuXgyH9bWW1wG2p3QZjO7CeQxm0FoWgIK';
 
 $hints = [
     1 => 'El contenedor tiene un archivo .zip de apoyo. Busca el paquete comprimido en /opt/ctf, /home y /tmp.',
-    2 => 'Extrae el zip con unzip. La contraseña ya ha aparecido en la historia: Es el nombre obtenido(BSSID) del primer nivel.',
+    2 => 'Extrae el zip con unzip. La contraseña ya ha aparecido en la historia: Es el nombre obtenido(BSSID) del segundo nivel.',
     3 => 'Ya has descubrierto que el nombre del primer nivel es Black_Beacon. Ahora un ataque de fuerza bruta con aircrack-ng -w password.lst *.cap podria revelar el contenido',
 ];
 
