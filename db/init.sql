@@ -17,6 +17,7 @@ CREATE TABLE app_config (
 INSERT INTO app_config (config_key, config_value) VALUES
 ('max_players', '20'),
 ('registration_open', '1'),
+('ssh_host', '192.168.220.10'),
 ('public_screen_enabled', '0');
 
 -- =========================================

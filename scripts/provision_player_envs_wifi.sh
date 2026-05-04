@@ -23,7 +23,8 @@ DB_NAME="ctf_wifi"
 DB_ROOT_PASS="root123"
 
 IMAGE_NAME="ctf-player-base:1.0"
-SSH_HOST_VALUE="192.168.220.10"
+DEFAULT_SSH_HOST_VALUE="192.168.220.10"
+SSH_HOST_VALUE="${SSH_HOST_VALUE:-$DEFAULT_SSH_HOST_VALUE}"
 SSH_PORT_START=2200
 
 # Primeras interfaces reservadas para el host y el laboratorio CTF.
@@ -38,7 +39,13 @@ EXTRA_MARGIN=0
 # ==========================================
 db_query() {
     local sql="$1"
-    "$DOCKER_BIN" exec "$DB_CONTAINER" mariadb -uroot -p"$DB_ROOT_PASS" "$DB_NAME" -Nse "$sql"
+    "$DOCKER_BIN" exec "$DB_CONTAINER" mariadb \
+        --protocol=TCP \
+        -h127.0.0.1 \
+        -uroot \
+        -p"$DB_ROOT_PASS" \
+        --database="$DB_NAME" \
+        -Nse "$sql"
 }
 
 # ==========================================
@@ -46,6 +53,28 @@ db_query() {
 # ==========================================
 sql_escape() {
     printf "%s" "$1" | sed "s/'/''/g"
+}
+
+# ==========================================
+# FUNCIÓN: cargar host SSH publicado
+# ==========================================
+load_ssh_host_value() {
+    local configured esc_host
+
+    configured="$(db_query "SELECT config_value FROM app_config WHERE config_key = 'ssh_host' LIMIT 1;")"
+
+    if [ -z "$configured" ]; then
+        esc_host="$(sql_escape "$SSH_HOST_VALUE")"
+        db_query "
+            INSERT INTO app_config (config_key, config_value, updated_at)
+            VALUES ('ssh_host', '${esc_host}', NOW())
+            ON DUPLICATE KEY UPDATE
+                config_value = VALUES(config_value),
+                updated_at = NOW();
+        "
+    else
+        SSH_HOST_VALUE="$configured"
+    fi
 }
 
 # ==========================================
@@ -160,6 +189,7 @@ ensure_container() {
         -p "${ssh_port}:22" \
         --cap-add NET_ADMIN \
         --cap-add NET_RAW \
+        --storage-opt size=2G \
         "$IMAGE_NAME" >/dev/null
 
     sleep 1
@@ -256,11 +286,12 @@ provision_one() {
 
     local container_name="player-${user_id}"
     local container_username="$alias"
-    local ssh_port esc_container esc_user
+    local ssh_port esc_container esc_user esc_ssh_host
 
     ssh_port="$(find_free_port "$current_ssh_port")"
     esc_container="$(sql_escape "$container_name")"
     esc_user="$(sql_escape "$container_username")"
+    esc_ssh_host="$(sql_escape "$SSH_HOST_VALUE")"
 
     echo ""
     echo "[+] Procesando jugador"
@@ -286,7 +317,7 @@ provision_one() {
         UPDATE player_envs
         SET env_status = IF(env_status = 'active', 'active', 'created'),
             container_name = '${esc_container}',
-            ssh_host = '${SSH_HOST_VALUE}',
+            ssh_host = '${esc_ssh_host}',
             ssh_port = ${ssh_port},
             container_username = '${esc_user}',
             created_at = IFNULL(created_at, NOW())
@@ -304,10 +335,13 @@ if ! "$DOCKER_BIN" ps --format '{{.Names}}' | grep -qx "$DB_CONTAINER"; then
     exit 1
 fi
 
+load_ssh_host_value
+echo "[+] Host SSH publicado: $SSH_HOST_VALUE"
+
 if ! "$DOCKER_BIN" image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
     echo "[ERROR] No existe la imagen $IMAGE_NAME"
     echo "Construyela primero con:"
-    echo "docker build -t $IMAGE_NAME ./Build"
+    echo "docker build -t $IMAGE_NAME -f Build/Dockerfile ."
     exit 1
 fi
 
@@ -323,6 +357,7 @@ approved_ids="$(db_query "
 
 if [ -z "$approved_ids" ]; then
     echo "[!] No hay jugadores aprobados con contraseña de contenedor."
+    prepare_hwsim_pool 0
     exit 0
 fi
 

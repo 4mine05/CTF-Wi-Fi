@@ -23,7 +23,7 @@ $basePoints = 125;
 $hintPenalty = 10;
 $failedAttemptPenalty = 5;
 $targetBssid = '52:54:46:33:48:53';
-$targetSsid = 'espectro-core';
+$targetSsid = 'TP-Link_23412';
 
 /*
  * El jugador debe obtener esta PSK con aircrack-ng.
@@ -32,8 +32,8 @@ $targetSsid = 'espectro-core';
 $flagHash = '$2y$12$j605YyfAiV22DsPRebIWBuXgyH9bWW1wG2p3QZjO7CeQxm0FoWgIK';
 
 $hints = [
-    1 => 'En tu entorno existe un archivo .zip de apoyo. Busca desde la raíz ',
-    2 => 'Extrae el zip con unzip. La contraseña ya ha aparecido en la historia: Es el nombre de la red obtenido (BSSID) del segundo nivel.',
+    1 => 'En tu entorno existe un archivo .zip. Busca desde la raíz ',
+    2 => 'Extrae el zip con unzip. La contraseña ya ha aparecido en la historia: Es el nombre de la red fantasma',
     3 => 'Realiza un ataque de fuerza bruta con aircrack-ng sobre la captura válida que hayas obtenido.',
 ];
 
@@ -272,8 +272,8 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             </p>
 
             <p>
-                En el contenedor hay un paquete comprimido preparado por el equipo anterior. Dentro encontraras
-                un diccionario pequeno para lanzar un ataque de fuerza bruta con <a href="https://aircrack-ng.org/doku.php?id=aircrack-ng" target="_blank"><code>aircrack-ng</code></a>.
+                En tu entorno hay un archivo comprimido preparado por el equipo anterior.
+                Podría ser muy util para resolver el reto.
             </p>
 
             <p>
@@ -284,7 +284,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
                 <p><strong>Ayuda</strong></p>
                 <p class="muted">Comandos que puedes necesitar para resolver el reto:</p>
                 <ul class="muted">
-                    <li><a href="https://www.redhat.com/en/blog/linux-find-command" target="_blank"><code>find</code></a></li>
+                    <li><a href="https://www.redhat.com/en/blog/linux-find-command" target="_blank"><code>find</code></a>, <a href="https://www.geeksforgeeks.org/linux-unix/locate-command-in-linux-with-examples/" target="_blank"><code>locate</code></a>, <a href="https://www.geeksforgeeks.org/linux-unix/tree-command-unixlinux/" target="_blank"><code>tree</code></a></li>
                     <li><a href="https://www.geeksforgeeks.org/linux-unix/unzip-command-in-linux/" target="_blank"><code>unzip</code></a></li>
                     <li><a href="https://aircrack-ng.org/doku.php?id=aircrack-ng" target="_blank"><code>aircrack-ng</code></a></li>
                 </ul>
@@ -343,8 +343,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
 
             <h3>Material esperado</h3>
             <p class="muted"><i>handshake</i> capturado en el nivel 3.</p>
-            <p class="muted">Diccionario comprimido dentro del contenedor del jugador.</p>
-            <p class="muted">Validacion esperada: PSK exacta de la red objetivo.</p>
+            <p class="muted">Archivo comprimido perdido.</p>
 
             <hr>
 

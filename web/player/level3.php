@@ -446,7 +446,7 @@ $currentLevelPoints = max(
             </p>
 
             <p>
-                En este nivel no basta con verla, necesitas capturar la prueba criptográfica que permita atacarla fuera de línea.
+                En este nivel no basta con verla, necesitas capturar la prueba que permita atacarla fuera de línea.
             </p>
 
             <p>

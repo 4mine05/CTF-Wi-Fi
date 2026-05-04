@@ -9,10 +9,13 @@ RUN apt update && apt install -y \
         openssh-server sudo \
         pciutils \
         wpasupplicant man-db isc-dhcp-client iputils-ping \
-        zip unzip tree 
+        zip unzip tree locate
 
 # Dictionary for level 4 - compressed with password
 COPY lab/level4/diccionario_espectro.zip /opt/ctf/level4/diccionario_espectro.zip
+
+# Update locate database
+RUN updatedb
 
 # SSH setup
 RUN mkdir -p /var/run/sshd
