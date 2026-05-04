@@ -32,9 +32,9 @@ $targetSsid = 'espectro-core';
 $flagHash = '$2y$12$j605YyfAiV22DsPRebIWBuXgyH9bWW1wG2p3QZjO7CeQxm0FoWgIK';
 
 $hints = [
-    1 => 'El contenedor tiene un archivo .zip de apoyo. Busca el paquete comprimido en /opt/ctf, /home y /tmp.',
-    2 => 'Extrae el zip con unzip. La contraseña ya ha aparecido en la historia: Es el nombre obtenido(BSSID) del segundo nivel.',
-    3 => 'Ya has descubrierto que el nombre del primer nivel es Black_Beacon. Ahora un ataque de fuerza bruta con aircrack-ng -w password.lst *.cap podria revelar el contenido',
+    1 => 'En tu entorno existe un archivo .zip de apoyo. Busca desde la raíz ',
+    2 => 'Extrae el zip con unzip. La contraseña ya ha aparecido en la historia: Es el nombre de la red obtenido (BSSID) del segundo nivel.',
+    3 => 'Realiza un ataque de fuerza bruta con aircrack-ng sobre la captura válida que hayas obtenido.',
 ];
 
 $message = '';
@@ -266,19 +266,18 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             <?php endif; ?>
 
             <p>
-                El handshake del nivel anterior ya confirma que la red <strong><code><?= h($targetSsid) ?></code></strong>
-                usa una clave compartida. Ahora la investigacion pasa a tener otro objetivo: no necesitas seguir
+                El <i>handshake</i> del nivel anterior ya confirma que la red <strong><code><?= h($targetSsid) ?></code></strong>
+                usa una clave compartida. Ahora la investigacion pasa a ser <i>offline</i>: no necesitas seguir
                 golpeando al punto de acceso, necesitas probar candidatos contra la captura.
             </p>
 
             <p>
-                En el contenedor hay un paquete comprimido. Dentro encontrarás
-                un diccionari para lanzar un ataque de fuerza bruta con <a href="https://aircrack-ng.org/doku.php?id=aircrack-ng" target="_blank"><code>aircrack-ng</code></a>.
+                En el contenedor hay un paquete comprimido preparado por el equipo anterior. Dentro encontraras
+                un diccionario pequeno para lanzar un ataque de fuerza bruta con <a href="https://aircrack-ng.org/doku.php?id=aircrack-ng" target="_blank"><code>aircrack-ng</code></a>.
             </p>
 
             <p>
-                Tu objetivo es encontrar la <strong>PreSharedKey exacta</strong> de la red objetivo y enviarla
-                en este portal.
+                Tu objetivo es encontrar la <strong><i>PreSharedKey</i> exacta</strong> de la red objetivo.
             </p>
 
             <div class="helper-box">
@@ -294,7 +293,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             <div class="meta">
                 <div class="meta-box">
                     <strong>Objetivo tecnico</strong>
-                    <p class="muted">Usar el handshake capturado y un diccionario para recuperar la WPA2 PreSharedKey.</p>
+                    <p class="muted">Usar el <i>handshake</i> capturado y un diccionario para recuperar la WPA2 <i>PreSharedKey</i>.</p>
                 </div>
                 <div class="meta-box">
                     <strong>Red objetivo</strong>
@@ -305,7 +304,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
 
             <?php if (!$completed): ?>
                 <form method="post">
-                    <label for="psk"><strong>Enviar PreSharedKey</strong></label>
+                    <label for="psk"><strong>Enviar <i>PreSharedKey</i></strong></label>
                     <input
                         type="text"
                         name="psk"
@@ -343,7 +342,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             <hr>
 
             <h3>Material esperado</h3>
-            <p class="muted">Handshake capturado en el nivel 3.</p>
+            <p class="muted"><i>handshake</i> capturado en el nivel 3.</p>
             <p class="muted">Diccionario comprimido dentro del contenedor del jugador.</p>
             <p class="muted">Validacion esperada: PSK exacta de la red objetivo.</p>
 

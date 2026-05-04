@@ -31,7 +31,7 @@ $targetSsid = 'TP-Link_23412';
 
 $hints = [
     1 => 'Si el cliente no genera trafico por si solo, un apretón de manos podria ayudar.',
-    2 => 'Verfica que tienes el archivo y que el handsake coindica con aircrack',
+    2 => 'Verfica bien la captura que has conseguido con aircrack-ng, la BSSID y el SSID tiene que coincidir con la red objetivo',
     3 => 'Recuerda que con sftp las opciones se definen antes de la conexión',
 ];
 
@@ -441,16 +441,16 @@ $currentLevelPoints = max(
             <?php endif; ?>
 
             <p>
-                La investigación revela una segunda red, identificada como <strong><code><?= h($targetSsid) ?></code></strong>, esta vez esta protegida con WPA2.
-                A diferencia de la anterior, parece ser el verdadero punto de entrada a la infraestructura.
+                La investigación revela una segunda red, identificada como <strong><code><?= h($targetSsid) ?></code></strong>, esta vez protegida con WPA2.
+                A diferencia de la anterior, esta parece ser el verdadero punto de entrada a la infraestructura
             </p>
 
             <p>
-                En este nivel no basta con verla, necesitas capturar la prueba que permita atacarla.
+                En este nivel no basta con verla, necesitas capturar la prueba criptográfica que permita atacarla fuera de línea.
             </p>
 
             <p>
-                Tu objetivo es subir un archivo <strong><code>.cap</code></strong> con un <strong>handshake WPA2 valido</strong>
+                Tu objetivo es subir la captura del <i>handshake</i> en formato <strong><code>.cap</code></strong> con un <strong><i>handshake</i> WPA2 valido</strong>
                 para preparar una intrusión controlada.
             </p>
 
@@ -461,18 +461,18 @@ $currentLevelPoints = max(
                     <li><a href="https://aircrack-ng.org/doku.php?id=airodump-ng" target="_blank"><code>airodump-ng</code></a></li>
                     <li><a href="https://aircrack-ng.org/doku.php?id=aireplay-ng" target="_blank"><code>aireplay-ng</code></a></li>
                     <li><a href="https://aircrack-ng.org/doku.php?id=aircrack-ng" target="_blank"><code>aircrack-ng</code></a></li>
-                    <li><a href="https://www.geeksforgeeks.org/linux-unix/linux-sftp-command-with-example/" target="_blank"><code>sftp</code></a></li>
+                    <li><a href="https://www.baeldung.com/linux/sftp-tutorial-examples" target="_blank"><code>sftp</code></a></li>
                 </ul>
             </div>
 
             <div class="meta">
                 <div class="meta-box">
                     <strong>Objetivo tecnico</strong>
-                    <p class="muted">Capturar y subir un handshake WPA2 valido en un archivo <code>.cap</code> a través de sftp.</p>
+                    <p class="muted">Capturar y subir un <i>handshake</i> WPA2 valido en un archivo <code>.cap</code>.</p>
                 </div>
                 <div class="meta-box">
-                    <strong>Validación</strong>
-                    <p class="muted">Se analizará tu captura para determinar si es un handshake WPA2 de la red objetivo es válido.</p>
+                    <strong>Validacion</strong>
+                    <p class="muted">Se analizará tu captura para determinar si es un <i>handshake</i> WPA2 de la red objetivo es válido.</p>
                 </div>
             </div>
 
@@ -488,7 +488,7 @@ $currentLevelPoints = max(
 
                     <p class="muted">
                         Sube una captura .cap de hasta <?= h((string)($maxUploadBytes / (1024 * 1024))) ?> MB.
-                        El nivel se completa cuando el servidor detecta un handshake WPA/WPA2 valido.
+                        El nivel se completa cuando el servidor detecta un <i>handshake</i> WPA/WPA2 valido.
                     </p>
 
                     <div class="actions">
@@ -525,7 +525,7 @@ $currentLevelPoints = max(
             <h3>Requisitos de la captura</h3>
             <p class="muted">Formato admitido: archivo .cap.</p>
             <p class="muted">Tamaño maximo: <?= h((string)($maxUploadBytes / (1024 * 1024))) ?> MB.</p>
-            <p class="muted">Validacion esperada: al menos un handshake WPA/WPA2.</p>
+            <p class="muted">Validacion esperada: al menos un <i>handshake</i> WPA/WPA2.</p>
 
             <hr>
 
