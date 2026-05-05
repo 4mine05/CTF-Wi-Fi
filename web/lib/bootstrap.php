@@ -10,6 +10,40 @@ function h(string $value): string
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+function refreshSessionUser(): void
+{
+    if (empty($_SESSION['user']['id'])) {
+        return;
+    }
+
+    global $pdo;
+
+    if (!$pdo instanceof PDO) {
+        return;
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT id, alias, role, status
+        FROM users
+        WHERE id = ?
+        LIMIT 1
+    ");
+    $stmt->execute([(int)$_SESSION['user']['id']]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user || (string)$user['status'] === 'deleted') {
+        unset($_SESSION['user']);
+        $_SESSION['login_error'] = 'Tu cuenta no tiene acceso.';
+        header('Location: /public/login.php');
+        exit;
+    }
+
+    $_SESSION['user']['id'] = (int)$user['id'];
+    $_SESSION['user']['alias'] = (string)$user['alias'];
+    $_SESSION['user']['role'] = (string)$user['role'];
+    $_SESSION['user']['status'] = (string)$user['status'];
+}
+
 function requireAdmin(): void
 {
     if (empty($_SESSION['user'])) {
@@ -17,6 +51,8 @@ function requireAdmin(): void
         header('Location: /public/login.php');
         exit;
     }
+
+    refreshSessionUser();
 
     if (($_SESSION['user']['role'] ?? '') !== 'admin') {
         $_SESSION['login_error'] = 'Acceso restringido al administrador.';
@@ -62,6 +98,8 @@ function requireLogin(): void
         header('Location: /public/login.php');
         exit;
     }
+
+    refreshSessionUser();
 }
 
 /* Redirigir según el rol */
@@ -71,6 +109,8 @@ function redirectByRole(): void
         header('Location: /public/login.php');
         exit;
     }
+
+    refreshSessionUser();
 
     $role = $_SESSION['user']['role'] ?? '';
 

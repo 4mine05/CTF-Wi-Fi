@@ -2,7 +2,7 @@ FROM docker.io/kalilinux/kali-rolling
 
 # Update repositories and install necessary tools
 RUN apt update && apt install -y \
-        nano vim \
+        nano vim less\
         python3 \
         iproute2 iw wireless-tools net-tools \
         aircrack-ng\ 

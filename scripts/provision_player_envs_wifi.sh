@@ -261,10 +261,49 @@ configure_container_user() {
                 echo "$CTF_USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
             cat > "/home/$CTF_USER/README_CTF_WIFI.txt" <<TXT
-Tu interfaz WiFi virtual del CTF es: wlan0
-Compruébala con:
-  iw dev
-  ip link show wlan0
+============================================================
+              CTF WiFi - Guía del jugador
+============================================================
+
+Bienvenido/a al laboratorio CTF WiFi.
+
+Estás dentro de tu contenedor personal de juego.
+Este entorno está aislado y asociado únicamente a tu usuario.
+
+Tu interfaz WiFi virtual del CTF es:
+
+  wlan0
+
+--------------------------------------------------------------------
+Recomendaciones:
+--------------------------------------------------------------------
+  - Lee bien cada enunciado antes de ejecutar comandos.
+  - No lances comandos que no entiendas.
+  - Guarda evidencias desde el principio.
+  - Trabaja de forma ordenada por niveles.
+  - Usa nombres claros para tus ficheros.
+  - No borres archivos si no sabes para qué sirven.
+  - No compartas soluciones con otros jugadores.
+
+--------------------------------------------------------------------
+Pistas
+--------------------------------------------------------------------
+
+Algunos niveles tienen pistas disponibles en el portal.
+
+Ten en cuenta:
+
+  - Las pistas pueden estar limitadas.
+  - No todas las pistas serán igual de útiles según tu avance en el reto.
+  - Algunas pistas pueden contener información clave para terminar el nivel.
+  - Otras pistas pueden aportar información que ya hayas descubierto, por lo que podrían no ayudarte y aun así consumir puntos o intentos.
+  - El uso de pistas puede quedar registrado.
+  - Antes de usar una pista, revisa:
+      el enunciado
+      tus comandos
+      tus evidencias
+      posibles errores de escritura en la flag
+
 TXT
             chown "$CTF_USER:$CTF_USER" "/home/$CTF_USER/README_CTF_WIFI.txt"
 

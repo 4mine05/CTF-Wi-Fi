@@ -12,6 +12,7 @@ DB_ROOT_PASS="root123"
 PLAYER_IMAGE="ctf-player-base:1.0"
 DEFAULT_SSH_HOST="192.168.220.10"
 
+clear
 if [ "${EUID:-$(id -u)}" -ne 0 ]; then
     echo "[ERROR] Ejecuta este menu con sudo o como root:"
     echo "        sudo bash ctf.sh"
@@ -253,6 +254,7 @@ compose_up() {
 }
 
 cleanup_levels() {
+    echo "[+] Limpiando niveles..."
     run_script "cleanup_levels.sh"
 }
 
@@ -270,6 +272,7 @@ start_or_restart_levels_and_players() {
 }
 
 start_levels() {
+    echo "[+] Iniciando niveles..."
     run_script "start_level1.sh" || return 1
     run_script "start_level3.sh" || return 1
 }
@@ -299,7 +302,7 @@ delete_player_containers() {
 
     echo "[+] Borrando contenedores de jugadores:"
     printf '    - %s\n' "${containers[@]}"
-    "$DOCKER_BIN" rm -f "${containers[@]}"
+    "$DOCKER_BIN" rm -f "${containers[@]}" || return 1
 }
 
 stop_player_containers() {
@@ -340,14 +343,15 @@ reset_lab() {
 }
 
 stop_all() {
-    cleanup_levels || echo "[!] Limpieza Wi-Fi fallo o no habia nada que limpiar; continuo parando."
-    stop_player_containers || return 1
+    delete_player_containers || return 1
 
-    echo "[+] Parando web y BBDD sin borrar volumenes"
-    docker_compose down || return 1
+    echo "[+] Parando web/BBDD y borrando volumen de la BBDD"
+    docker_compose down -v || return 1
+
+    cleanup_levels || echo "[!] Limpieza Wi-Fi fallo o no habia nada que limpiar; continuo."
 
     echo ""
-    echo "[OK] Todo parado. La BBDD se conserva porque no se uso -v."
+    echo "[OK] Todo parado. Contenedores de jugadores borrados y volumen de BBDD eliminado."
 }
 
 show_status() {
