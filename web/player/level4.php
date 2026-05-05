@@ -233,7 +233,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nivel 4 - La llave del espectro</title>
+    <title>Nivel 4 - THE CIPHER FALLS</title>
     <link rel="stylesheet" href="/stylesheet/styles.css">
 </head>
 <body>
@@ -251,7 +251,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
     <div class="grid">
         <div class="card">
             <div class="eyebrow">Nivel 4</div>
-            <h1>La llave del espectro</h1>
+            <h1>THE CIPHER FALLS</h1>
 
             <?php if ($message !== ''): ?>
                 <div class="message <?= h($messageType) ?>">

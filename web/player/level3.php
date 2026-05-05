@@ -408,7 +408,7 @@ $currentLevelPoints = max(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nivel 3 - El acceso vigilado</title>
+    <title>Nivel 3 - THE GUARDED GATE</title>
     <link rel="stylesheet" href="/stylesheet/styles.css">
 </head>
 <body>
@@ -426,7 +426,7 @@ $currentLevelPoints = max(
     <div class="grid">
         <div class="card">
             <div class="eyebrow">Nivel 3</div>
-            <h1>El acceso vigilado</h1>
+            <h1>THE GUARDED GATE</h1>
 
             <?php if ($message !== ''): ?>
                 <div class="message <?= h($messageType) ?>">
