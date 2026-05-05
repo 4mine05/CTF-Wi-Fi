@@ -285,7 +285,7 @@ start_web_db() {
     echo ""
     echo "[OK] Web y BBDD iniciadas."
     echo "     Web: http://${web_host}:8080"
-    echo "     Cuando apruebes jugadores, usa la opcion 5 para iniciar niveles y contenedores."
+    echo "     Cuando apruebes jugadores, usa la opcion 5 para iniciar niveles y entornos de jugadores."
 }
 
 delete_player_containers() {
@@ -397,10 +397,10 @@ print_menu() {
     echo ""
     echo "=== Admin CTF Wi-Fi ==="
     echo ""
-    echo "1. Ver/cambiar dominio o IP SSH"
+    echo "1. Iniciar web/BBDD"
     echo "2. Ver codigo de invitacion activo"
     echo "3. Cambiar codigo de invitacion"
-    echo "4. Iniciar web/BBDD"
+    echo "4. Ver/cambiar dominio o IP SSH"
     echo "5. Iniciar/reiniciar niveles y jugadores"
     echo "6. Reiniciar laboratorio desde cero"
     echo "7. Ver estado"
@@ -417,10 +417,10 @@ main() {
         read -r -p "Opcion: " option
 
         case "$option" in
-            1) run_action configure_ssh_host ;;
+            1) run_action start_web_db ;;
             2) run_action show_invitation_code ;;
             3) run_action change_invitation_code ;;
-            4) run_action start_web_db ;;
+            4) run_action configure_ssh_host ;;
             5) run_action start_or_restart_levels_and_players ;;
             6) run_action reset_lab ;;
             7) run_action show_status ;;

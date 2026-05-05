@@ -274,7 +274,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
             <p>
                 En tu entorno hay un archivo comprimido preparado por el equipo anterior.
                 Podría ser muy util para resolver el reto.
-            </p>
+                El archivo está protegido con una <i>password</i> de 11 caracteres. Seguro que ya la tienes.        </p>
 
             <p>
                 Tu objetivo es encontrar la <strong><i>PreSharedKey</i> exacta</strong> de la red objetivo.
