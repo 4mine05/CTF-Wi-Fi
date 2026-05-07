@@ -30,7 +30,7 @@ Dependencias principales:
 
 - Docker Engine y Docker Compose.
 - Cliente MariaDB/MySQL para administracion opcional.
-- Herramientas Wi-Fi: `aircrack-ng`, `wpasupplicant`, `isc-dhcp-client`, `iproute2`, `iw`, `hostapd`, `dnsmasq`.
+- Herramientas Wi-Fi: `wpasupplicant`, `isc-dhcp-client`, `iproute2`, `iw`, `hostapd`, `dnsmasq`.
 - Permisos de `sudo` o ejecucion como `root`.
 
 Instalacion rapida de dependencias en Ubuntu:
