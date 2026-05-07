@@ -94,8 +94,17 @@ El codigo de invitacion inicial se define en `db/init.sql`. Por defecto es:
 ```text
 CLASE2026
 ```
-
 Puedes verlo o cambiarlo desde el menu `ctf.sh`.
+
+También se crea por defecto un usuario administrador con las siguientes credenciales:
+
+```text
+Usuario: admin
+Contraseña: admin1234
+```
+
+Este usuario ya viene aprobado.
+
 
 ## Menu de administracion
 
