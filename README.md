@@ -37,7 +37,7 @@ Instalacion rapida de dependencias en Ubuntu:
 
 ```bash
 sudo apt update
-sudo apt install -y mysql-client wpasupplicant isc-dhcp-client iproute2 iw hostapd dnsmasq aircrack-ng
+sudo apt install -y mysql-client wpasupplicant isc-dhcp-client iproute2 iw hostapd dnsmasq curl
 ```
 
 Instalacion de Docker desde el repositorio oficial:
