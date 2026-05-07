@@ -22,7 +22,7 @@ La dinamica esta pensada para un evento o una clase: los jugadores se registran 
 
 ## Requisitos
 
-El laboratorio esta orientado a Linux con soporte para `mac80211_hwsim`. Se recomienda Ubuntu Desktop 25.10 o una distribucion compatible.
+El laboratorio esta orientado a Linux con soporte para `mac80211_hwsim`. Se recomienda Ubuntu Desktop 24.04 o una distribucion compatible.
 
 No esta pensado para ejecutarse directamente en Windows o WSL, porque los niveles dependen de modulos del kernel, interfaces Wi-Fi virtuales, namespaces de red y herramientas que necesitan privilegios de root.
 
