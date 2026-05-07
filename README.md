@@ -37,13 +37,25 @@ sudo apt update && sudo apt install mysql-client -y
    ```
   *Es necesario cerrar sesión y volver a entrar para aplicar el cambio.*
 ### 3. Herramientas necessarias
+  - **3.1 Instalar herramienta:**
   ```bash
   sudo apt install wpasupplicant isc-dhcp-client iproute2 iw  hostapd dnsmasq -y
   ```
-## Construir imagen base:
-```bash
-sudo docker build -t ctf-player-base:1.0 -f Build/Dockerfile .
-```
-
-
-   
+- **3.2 Construir imagen base:**
+  ```bash
+  cd CTF-Wi-Fi
+  sudo docker build -t ctf-player-base:1.0 -f Build/Dockerfile .
+  ```
+- **3.3 Construir contenedor:**
+  ```bash
+  docker compose up -d
+  ```
+### 4. Acciones del administrador
+  *Es necesario que se hayan regristado con anterioridad los usuarios de los que se desea hacer participe del reto, y que sea aceptada su participación por un administrador*
+  *El rol de admin esta creado directamente nombre: admin contraseña: admin1234*
+  cd scripts
+  sudo bash provision_player_envs_wifi.sh
+  sudo bash cleanup_levels.sh
+  sudo bash start_level1.sh
+  sudo bash start_level3.sh
+  
