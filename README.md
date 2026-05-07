@@ -103,8 +103,6 @@ Usuario: admin
 Contraseña: admin1234
 ```
 
-Este usuario ya viene aprobado.
-
 
 ## Menu de administracion
 
