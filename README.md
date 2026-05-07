@@ -53,9 +53,11 @@ sudo apt update && sudo apt install mysql-client -y
 ### 4. Acciones del administrador
   *Es necesario que se hayan regristado con anterioridad los usuarios de los que se desea hacer participe del reto, y que sea aceptada su participación por un administrador*
   *El rol de admin esta creado directamente nombre: admin contraseña: admin1234*
+   ```bash
   cd scripts
   sudo bash provision_player_envs_wifi.sh
   sudo bash cleanup_levels.sh
   sudo bash start_level1.sh
   sudo bash start_level3.sh
+  ```
   
