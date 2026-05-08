@@ -89,6 +89,22 @@ Flujo recomendado:
 7. Vuelve al menu y usa la opcion `5. Iniciar/reiniciar niveles y jugadores`.
 8. Cada jugador entra en su panel, copia su comando SSH y empieza el nivel 1 desde la web.
 
+## IP o dominio del laboratorio
+
+El valor de `IP/o-dominio` se configura desde la opcion `4` del menu de `ctf.sh`.
+
+- En el menu, `4` muestra el valor actual y permite cambiarlo.
+- Si presionas Enter sin escribir nada, el valor actual se mantiene.
+
+¿Para qué sirve?
+
+- Este host es la direccion que los jugadores usan para conectarse por SSH a su contenedor.
+- El portal web tambien debe ser accesible en la misma maquina, generalmente con `http://<IP-o-dominio>:8080`.
+- Si el host no es accesible desde las maquinas de los jugadores, la conexion SSH fallara.
+
+Cuando uses el laboratorio en una red local, lo normal es un IP como `192.168.220.10`.
+Si quieres usar un nombre de dominio, debes configurar ese nombre en tu DNS o en el archivo `hosts` de los clientes, y luego escribir ese mismo nombre en el menu.
+
 El codigo de invitacion inicial se define en `db/init.sql`. Por defecto es:
 
 ```text
