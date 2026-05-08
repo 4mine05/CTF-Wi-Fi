@@ -105,6 +105,8 @@ El valor de `IP/o-dominio` se configura desde la opcion `4` del menu de `ctf.sh`
 Cuando uses el laboratorio en una red local, lo normal es un IP como `192.168.220.10`.
 Si quieres usar un nombre de dominio, debes configurar ese nombre en tu DNS o en el archivo `hosts` de los clientes, y luego escribir ese mismo nombre en el menu.
 
+## Usuario administrador y codigo de invitación
+
 El codigo de invitacion inicial se define en `db/init.sql`. Por defecto es:
 
 ```text
