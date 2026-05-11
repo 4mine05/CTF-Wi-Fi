@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../lib/bootstrap.php';
 
-$message = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -82,10 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
 
             if ($status === 'pending_review') {
-                $message = 'Registro enviado correctamente. Tu cuenta está pendiente de revisión por el administrador.';
+                $_SESSION['login_success'] = 'Registro enviado correctamente. Tu cuenta está pendiente de revisión por el administrador.';
             } else {
-                $message = 'Registro completado, pero ahora mismo no hay plazas. Has entrado en la lista de espera.';
+                $_SESSION['login_success'] = 'Registro completado, pero ahora mismo no hay plazas. Has entrado en la lista de espera.';
             }
+
+            header('Location: /public/login.php');
+            exit;
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
@@ -119,10 +121,6 @@ $submittedInviteCode = (string)($_POST['invite_code'] ?? '');
             <p class="muted">
                 Registra tu acceso al evento con un alias, una contraseña válida y un código de invitación.
             </p>
-
-            <?php if ($message !== ''): ?>
-                <div class="message success"><?= h($message) ?></div>
-            <?php endif; ?>
 
             <?php if ($error !== ''): ?>
                 <div class="message error"><?= h($error) ?></div>

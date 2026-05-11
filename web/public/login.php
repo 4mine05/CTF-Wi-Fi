@@ -4,10 +4,16 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 
 $error = '';
+$success = '';
 
 if (isset($_SESSION['login_error'])) {
     $error = (string)$_SESSION['login_error'];
     unset($_SESSION['login_error']);
+}
+
+if (isset($_SESSION['login_success'])) {
+    $success = (string)$_SESSION['login_success'];
+    unset($_SESSION['login_success']);
 }
 
 if (!empty($_SESSION['user']) && $error === '') {
@@ -82,6 +88,10 @@ $submittedAlias = (string)($_POST['alias'] ?? '');
 
             <?php if ($error !== ''): ?>
                 <div class="message error"><?= h($error) ?></div>
+            <?php endif; ?>
+
+            <?php if ($success !== ''): ?>
+                <div class="message success"><?= h($success) ?></div>
             <?php endif; ?>
 
             <form method="post">
