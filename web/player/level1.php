@@ -258,7 +258,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'flag') {
     <div class="grid">
         <div class="card">
             <div class="eyebrow">Nivel 1</div>
-            <h1>Black beacon</h1>
+            <h1>Black Beacon</h1>
 
             <?php if ($message !== ''): ?>
                 <div class="message <?= h($messageType) ?>">
