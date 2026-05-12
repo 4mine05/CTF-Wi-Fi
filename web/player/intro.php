@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireLogin();
 
+// La introduccion solo pertenece al flujo de jugadores.
 if (($_SESSION['user']['role'] ?? '') !== 'player') {
     http_response_code(403);
     exit('Acceso solo para jugadores.');
@@ -11,6 +12,7 @@ if (($_SESSION['user']['role'] ?? '') !== 'player') {
 
 $status = $_SESSION['user']['status'] ?? '';
 
+// Bloquea el acceso al juego si la cuenta aun no esta aprobada.
 if ($status === 'pending_review') {
     http_response_code(403);
     exit('Tu cuenta está pendiente de revisión.');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireAdmin();
 
+// Este endpoint solo acepta acciones enviadas desde formularios POST.
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     exit('Método no permitido.');
@@ -15,8 +16,10 @@ if ($userId <= 0) {
 }
 
 try {
+    // Bloquea usuario y cambios relacionados hasta completar la aprobacion.
     $pdo->beginTransaction();
 
+    // Carga el usuario seleccionado con bloqueo para evitar carreras de estado.
     $stmt = $pdo->prepare("
         SELECT id, alias, role, status
         FROM users
@@ -39,6 +42,7 @@ try {
     }
 
     if ($user['status'] === 'waitlisted') {
+        // Si viene de lista de espera, comprueba que todavia queda plaza libre.
         $maxPlayers = getConfigInt($pdo, 'max_players', 30);
         $reservedSlots = countReservedSlots($pdo);
 
@@ -46,6 +50,7 @@ try {
             throw new RuntimeException('No hay plazas libres para aprobar a este usuario.');
         }
 
+        // Marca la entrada de lista de espera como promocionada.
         $stmt = $pdo->prepare("
             UPDATE waitlist
             SET status = 'promoted', promoted_at = NOW()
@@ -54,6 +59,7 @@ try {
         $stmt->execute([$userId]);
     }
 
+    // Aprueba la cuenta del jugador.
     $stmt = $pdo->prepare("
         UPDATE users
         SET status = 'approved',
@@ -63,6 +69,7 @@ try {
     ");
     $stmt->execute([$userId]);
 
+    // Solicita la creacion o recreacion del entorno del jugador.
     $stmt = $pdo->prepare("
         INSERT INTO player_envs (
             user_id,
@@ -101,6 +108,7 @@ try {
     header('Location: /admin/users.php');
     exit;
 } catch (Throwable $e) {
+    // Revierte la aprobacion si falla alguna operacion de la transaccion.
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }

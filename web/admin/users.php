@@ -4,9 +4,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireAdmin();
 
+// Configuracion visible desde el panel de control.
 $publicScreenEnabled = getConfig($pdo, 'public_screen_enabled', '1') === '1';
 $maxPlayers = getConfigInt($pdo, 'max_players', 30);
 
+// Metricas principales de plazas y estados de usuarios.
 $stmt = $pdo->query("
     SELECT COUNT(*) FROM users WHERE status IN ('pending_review', 'approved')
 ");
@@ -34,6 +36,7 @@ $deletedCount = (int)$stmt->fetchColumn();
 
 $freeSlots = max(0, $maxPlayers - $reservedSlots);
 
+// Listado completo de usuarios con el estado del entorno asociado.
 $stmt = $pdo->query("
     SELECT
         u.id,
@@ -55,6 +58,7 @@ $allUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 function userStatusLabel(string $status): string
 {
+    // Traduce estados internos de cuenta a etiquetas legibles.
     return match ($status) {
         'pending_review' => 'Pendiente',
         'approved' => 'Aprobado',
@@ -66,6 +70,7 @@ function userStatusLabel(string $status): string
 
 function envStatusLabel(?string $status): string
 {
+    // Traduce estados internos del entorno a etiquetas legibles.
     return match ($status) {
         null => '-',
         'not_created' => 'Sin crear',
@@ -84,6 +89,7 @@ function envStatusLabel(?string $status): string
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Refresca el panel para ver cambios de altas y entornos. -->
     <meta http-equiv="refresh" content="15">
     <title>Panel admin</title>
     <link rel="stylesheet" href="/stylesheet/styles.css">

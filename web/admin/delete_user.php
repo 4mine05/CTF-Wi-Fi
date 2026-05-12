@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireAdmin();
 
+// Este endpoint solo acepta acciones enviadas desde formularios POST.
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     exit('Método no permitido.');
@@ -15,8 +16,10 @@ if ($userId <= 0) {
 }
 
 try {
+    // Agrupa la eliminacion logica, lista de espera y entorno en una transaccion.
     $pdo->beginTransaction();
 
+    // Bloquea el usuario para validar su estado actual.
     $stmt = $pdo->prepare("
         SELECT id, alias, role, status
         FROM users
@@ -42,6 +45,7 @@ try {
         throw new RuntimeException('El usuario ya estaba eliminado.');
     }
 
+    // Marca la cuenta como eliminada sin borrar el registro historico.
     $stmt = $pdo->prepare("
         UPDATE users
         SET status = 'deleted',
@@ -51,6 +55,7 @@ try {
     ");
     $stmt->execute([$userId]);
 
+    // Retira al usuario de la lista de espera si estaba esperando.
     $stmt = $pdo->prepare("
         UPDATE waitlist
         SET status = 'removed',
@@ -59,6 +64,7 @@ try {
     ");
     $stmt->execute([$userId]);
 
+    // Cierra o descarta el entorno asociado segun su estado actual.
     $stmt = $pdo->prepare("
         UPDATE player_envs
         SET env_status = CASE
@@ -78,6 +84,7 @@ try {
     header('Location: /admin/users.php');
     exit;
 } catch (Throwable $e) {
+    // Revierte la eliminacion si falla alguna parte.
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }

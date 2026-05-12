@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireLogin();
 
+// Solo jugadores autenticados pueden acceder a los niveles.
 if (($_SESSION['user']['role'] ?? '') !== 'player') {
     http_response_code(403);
     exit('Acceso solo para jugadores.');
@@ -21,6 +22,7 @@ $alias = (string)($_SESSION['user']['alias'] ?? 'jugador');
 /* Restringir acceso a niveles no desbloqueados */
 ensureLevelUnlocked($pdo, $userId, 2);
 
+// Configuracion de puntuacion y penalizaciones del nivel.
 $levelNumber = 2;
 $basePoints = 75;
 $hintPenalty = 10;
@@ -29,7 +31,7 @@ $failedAttemptPenalty = 5;
 /*
  * Sustituye este hash por el hash real de tu flag.
  * Ejemplo para generarlo:
- * php -r "echo password_hash('CTF{AA:BB:CC:DD:EE:FF}', PASSWORD_DEFAULT), PHP_EOL;"
+ * php -r "echo password_hash('<tu_flag>', PASSWORD_DEFAULT), PHP_EOL;"
  */
 $flagHash = '$2y$12$aYIcnP94cTc9bMsaj7TKx.W04egUnQyDrVGiDlCbqCeVB/PzLN66y'; /*Flag: "Black_Beacon"*/
 
@@ -39,6 +41,7 @@ $hints = [
     3 => 'Utilizar airodump-ng para buscar el BSSID, el canal y la interfaz ',
 ];
 
+// Mensaje que se mostrara en la vista tras procesar acciones.
 $message = '';
 $messageType = 'info';
 
@@ -89,6 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'use_hint') {
+        // Registra una pista usada tanto en el nivel como en el total del jugador.
         if ($hintsUsed < count($hints)) {
             $pdo->beginTransaction();
 
@@ -123,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
     }
 
     if ($action === 'submit_flag') {
+        // Valida la flag enviada y actualiza puntuacion o penalizacion.
         $submittedFlag = trim((string)($_POST['flag'] ?? ''));
 
         if ($submittedFlag === '') {
@@ -133,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
             $messageType = 'error';
         } else {
             if (password_verify($submittedFlag, $flagHash)) {
+                // Calcula puntos finales descontando pistas e intentos fallidos.
                 $finalPoints = max(
                     0,
                     $basePoints - ($hintsUsed * $hintPenalty) - ($failedAttempts * $failedAttemptPenalty)
@@ -141,6 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
                 $pdo->beginTransaction();
 
                 try {
+                    // Desbloquea el siguiente nivel al completar este.
                     $pdo->prepare("
                         UPDATE user_level_progress
                         SET completed = 1,
@@ -177,6 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
                     $messageType = 'error';
                 }
             } else {
+                // Registra un intento fallido cuando la flag no coincide.
                 $pdo->beginTransaction();
 
                 try {
@@ -232,6 +240,7 @@ $currentLevelPoints = max(
 );
 
 if (isset($_GET['error']) && $_GET['error'] === 'flag') {
+    // Mensaje mostrado tras redirigir por una flag incorrecta.
     $message = 'Flag incorrecta. Se ha aplicado una penalización.';
     $messageType = 'error';
 }

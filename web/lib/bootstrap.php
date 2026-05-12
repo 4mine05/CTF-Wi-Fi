@@ -1,17 +1,22 @@
 <?php
 declare(strict_types=1);
 
+// Inicializa la sesion PHP antes de leer o escribir datos del usuario.
 session_start();
 
+// Carga la conexion PDO compartida.
 require_once __DIR__ . '/../config/db.php';
 
+// Function para Evitar inyección XSS
 function h(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+// Actualizar el usuario en la sesión
 function refreshSessionUser(): void
 {
+    // Si no hay usuario en sesion, no hay nada que refrescar.
     if (empty($_SESSION['user']['id'])) {
         return;
     }
@@ -44,8 +49,10 @@ function refreshSessionUser(): void
     $_SESSION['user']['status'] = (string)$user['status'];
 }
 
+// Restringir acceso al administrador
 function requireAdmin(): void
 {
+    // Obliga a iniciar sesion antes de entrar a paginas de administrador.
     if (empty($_SESSION['user'])) {
         $_SESSION['login_error'] = 'Debes iniciar sesión.';
         header('Location: /public/login.php');
@@ -62,6 +69,7 @@ function requireAdmin(): void
     }
 }
 
+// Recupera un valor de configuración de texto desde la base de datos.
 function getConfig(PDO $pdo, string $key, string $default = ''): string
 {
     $stmt = $pdo->prepare('SELECT config_value FROM app_config WHERE config_key = ? LIMIT 1');
@@ -71,6 +79,7 @@ function getConfig(PDO $pdo, string $key, string $default = ''): string
     return $value === false ? $default : (string)$value;
 }
 
+// Recupera un valor de configuración numérico desde la base de datos.
 function getConfigInt(PDO $pdo, string $key, int $default = 0): int
 {
     return (int)getConfig($pdo, $key, (string)$default);
@@ -93,6 +102,7 @@ function countReservedSlots(PDO $pdo): int
 /* Requerir inicio de sesión */
 function requireLogin(): void
 {
+    // Protege paginas que requieren cualquier usuario autenticado.
     if (empty($_SESSION['user'])) {
         $_SESSION['login_error'] = 'Debes iniciar sesión.';
         header('Location: /public/login.php');
@@ -105,6 +115,7 @@ function requireLogin(): void
 /* Redirigir según el rol */
 function redirectByRole(): void
 {
+    // Envia cada rol a su panel principal.
     if (empty($_SESSION['user'])) {
         header('Location: /public/login.php');
         exit;
@@ -129,9 +140,10 @@ function redirectByRole(): void
     exit;
 }
 
-/* Generar hash Linux de la contraseña para el usuario */
+/* Generar hash Linux de la contraseña del contenedor para el usuario */
 function makeLinuxPasswordHash(string $password): string
 {
+    // Salt aleatorio para generar un hash SHA-512 compatible con Linux.
     $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./';
     $salt = '';
 
@@ -151,6 +163,7 @@ function makeLinuxPasswordHash(string $password): string
 /* Restringir acceso a niveles no desbloqueados */
 function ensureLevelUnlocked(PDO $pdo, int $userId, int $levelNumber): void
 {
+    // El nivel 1 siempre esta disponible para jugadores aprobados.
     if ($levelNumber <= 1) {
         return;
     }

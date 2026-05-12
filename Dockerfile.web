@@ -1,20 +1,25 @@
+# Imagen PHP con Apache para servir el portal web del CTF.
 FROM php:8.2-apache-bookworm
 
-# Install aircrack-ng for handshake capture validation
+# Instala aircrack-ng para validar capturas desde el nivel 3.
 RUN apt-get update && apt-get install -y aircrack-ng && rm -rf /var/lib/apt/lists/*
 
-# Typical PHP extensions for MySQL/MariaDB
+# Habilita extensiones PHP necesarias para conectar con MariaDB.
 RUN docker-php-ext-install pdo pdo_mysql mysqli
 
-# Enable mod_rewrite
+# Activa modulos Apache usados por el portal.
 RUN a2enmod rewrite headers
 
+# Copia el codigo de la aplicacion web al DocumentRoot de Apache.
 COPY ./web/* /var/www/html/
 
-# Permissions
+# Ajusta propietario y permisos de los archivos servidos.
 RUN chown -R www-data:www-data /var/www \
  && find /var/www -type d -exec chmod 755 {} \; \
  && find /var/www -type f -exec chmod 644 {} \;
 
+# Publica el puerto HTTP interno del contenedor.
 EXPOSE 80
+
+# Arranca Apache en primer plano para que Docker gestione el proceso.
 CMD ["apache2ctl", "-D", "FOREGROUND"]

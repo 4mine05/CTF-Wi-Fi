@@ -22,8 +22,11 @@ DB_CONTAINER="ctf_db"
 DB_NAME="ctf_wifi"
 DB_ROOT_PASS="root123"
 
+# Nombre de la imagen de Docker base de jugador construida con `Build/Dockerfile`.
 IMAGE_NAME="ctf-player-base:1.0"
-DEFAULT_SSH_HOST_VALUE="192.168.220.10"
+
+# Host SSH para conectar con los jugadores.
+DEFAULT_SSH_HOST_VALUE="localhost"
 SSH_HOST_VALUE="${SSH_HOST_VALUE:-$DEFAULT_SSH_HOST_VALUE}"
 SSH_PORT_START=2200
 
@@ -31,7 +34,7 @@ SSH_PORT_START=2200
 # Quedaran libres en el host como wlan0..wlan9.
 HOST_WIFI_RESERVE=20
 
-# Si quieres dejar 1 o 2 radios extra ademas de las 10 del host, subelo.
+# Si quieres dejar 1 o 2 radios extra ademas de las 10 del host.
 EXTRA_MARGIN=0
 
 # ==========================================
@@ -114,6 +117,7 @@ find_free_port() {
 
 # ==========================================
 # FUNCIÓN: asegurar fila en player_envs
+# - si no existe, la crea
 # ==========================================
 ensure_player_env_row() {
     local user_id="$1"
@@ -126,8 +130,7 @@ ensure_player_env_row() {
 
 # ==========================================
 # FUNCIÓN: reiniciar pool WiFi virtual
-# IMPORTANTE: esto tumba hostapd/wpa_supplicant/dnsmasq si estaban usando hwsim.
-# Ejecútalo antes de levantar las redes del laboratorio.
+# IMPORTANTE: esto tumba hostapd/wpa_supplicant/dnsmasq si estaban usando mac80211_hwsim (simulador de hardware WiFi virtual).
 # ==========================================
 prepare_hwsim_pool() {
     local player_count="$1"
@@ -196,7 +199,8 @@ ensure_container() {
 }
 
 # ==========================================
-# FUNCIÓN: mover una PHY al contenedor y dejarla como wlan0 dentro
+# FUNCIÓN: mover una tarjeta WiFi virtual al  
+# contenedor y renombrándola como wlan0 dentro
 # ==========================================
 attach_wifi_to_container() {
     local container_name="$1"

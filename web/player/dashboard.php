@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireLogin();
 
+// El panel de jugador no debe ser accesible para administradores.
 if (($_SESSION['user']['role'] ?? '') !== 'player') {
     http_response_code(403);
     exit('Acceso solo para jugadores.');
@@ -11,6 +12,7 @@ if (($_SESSION['user']['role'] ?? '') !== 'player') {
 
 function dashboardAccountStatusLabel(string $status): string
 {
+    // Traduce el estado de la cuenta a texto visible para el jugador.
     return match ($status) {
         'pending_review' => 'Pendiente de revision',
         'waitlisted' => 'Lista de espera',
@@ -22,6 +24,7 @@ function dashboardAccountStatusLabel(string $status): string
 
 function dashboardEnvStatusLabel(?string $status): string
 {
+    // Traduce el estado tecnico del entorno a texto visible.
     return match ($status) {
         null => 'No disponible',
         'not_created' => 'Sin crear',
@@ -47,6 +50,8 @@ $message = '';
 $messageType = 'info';
 $hasLevelAccessError = false;
 $levelAccessMessage = '';
+
+// Muestra errores de acceso a niveles tras redirigir desde ensureLevelUnlocked().
 if (isset($_SESSION['level_access_error'])) {
     $message = (string)$_SESSION['level_access_error'];
     $messageType = 'error';
@@ -60,6 +65,7 @@ $showSshCommand = false;
 $sshCommand = '';
 
 if ($status === 'pending_review') {
+    // Usuarios pendientes o en espera no reciben comando SSH.
     $message = 'Tu cuenta está pendiente de revision por el administrador.';
     $messageType = 'warning';
 } elseif ($status === 'waitlisted') {
@@ -69,6 +75,7 @@ if ($status === 'pending_review') {
     $message = 'Tu cuenta no tiene acceso al juego.';
     $messageType = 'error';
 } else {
+    // Carga el entorno asignado al jugador aprobado.
     $stmt = $pdo->prepare("
         SELECT env_status, ssh_host, ssh_port, container_username
         FROM player_envs
@@ -85,6 +92,7 @@ if ($status === 'pending_review') {
         $message = 'Tu entorno todavía no esta listo. En cuanto se prepare podras comenzar la operación.';
         $messageType = 'warning';
     } elseif (in_array($envStatusRaw, ['created', 'active'], true)) {
+        // Cuando el entorno esta listo, se muestra el comando SSH.
         $message = 'Tu entorno esta listo. Ya puedes acceder al laboratorio y comenzar la misión.';
         $messageType = 'success';
         $showStartAction = true;
@@ -109,6 +117,7 @@ if ($status === 'pending_review') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Refresca el panel para ver cambios de altas y entornos. -->
     <meta http-equiv="refresh" content="15">
     <title>Mi panel</title>
     <link rel="stylesheet" href="/stylesheet/styles.css">

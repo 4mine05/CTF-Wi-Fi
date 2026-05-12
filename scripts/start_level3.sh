@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Modo debug opcional, salida silenciosa por defecto
 if [ "${LEVEL_DEBUG:-0}" = "1" ]; then
     set -x
     trap 'echo "ERROR line $LINENO: $BASH_COMMAND" >&2' ERR
@@ -8,6 +9,7 @@ else
     exec >/dev/null 2>&1
 fi
 
+# Comprobar si el script se ejecuta como root
 if [ "${EUID:-$(id -u)}" -ne 0 ]; then
     exit 1
 fi
@@ -16,6 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 LEVEL_DIR="$REPO_ROOT/lab/level3"
 
+# Detener procesos que puedan estar corriendo
 kill_pidfile() {
     local pidfile="$1"
 
@@ -25,6 +28,7 @@ kill_pidfile() {
     fi
 }
 
+# Eliminar todas las redes virtuales
 cleanup_netns() {
     local netns="$1"
 
@@ -36,6 +40,7 @@ cleanup_netns() {
     fi
 }
 
+# Configurar la interfaz AP
 setup_ap_iface() {
     local iface="$1"
     local cidr="$2"
@@ -46,6 +51,7 @@ setup_ap_iface() {
     ip addr add "$cidr" dev "$iface"
 }
 
+# Mover la interfaz a la red virtual
 move_iface_to_netns() {
     local iface="$1"
     local netns="$2"
@@ -58,6 +64,7 @@ move_iface_to_netns() {
     ip netns exec "$netns" ip link set "$iface" up
 }
 
+# Iniciar un cliente
 start_client() {
     local netns="$1"
     local iface="$2"
@@ -76,6 +83,7 @@ start_client() {
         "$iface" &
 }
 
+# Iniciar un ping
 start_ping() {
     local netns="$1"
     local target="$2"
@@ -85,10 +93,12 @@ start_ping() {
     echo "$!" > "$pidfile"
 }
 
+# Detener procesos
 for pidfile in /run/level3*.pid; do
     [ -e "$pidfile" ] && kill_pidfile "$pidfile"
 done
 
+# Limpieza
 cleanup_netns level3-client1
 cleanup_netns level3-client2
 cleanup_netns level3-client3
@@ -99,10 +109,12 @@ rm -f /run/level3*.pid /run/level3*.leases
 
 rfkill unblock all || true
 
+# Configurar las interfaces
 setup_ap_iface wlan10 10.10.3.1/24
 setup_ap_iface wlan15 10.10.31.1/24
 setup_ap_iface wlan16 10.10.32.1/24
 
+# Iniciar los servicios
 hostapd -B -P /run/level3ap.pid "$LEVEL_DIR/level3ap.conf"
 hostapd -B -P /run/level3fakeap1.pid "$LEVEL_DIR/level3fakeap1.conf"
 hostapd -B -P /run/level3fakeap2.pid "$LEVEL_DIR/level3fakeap2.conf"
@@ -113,6 +125,7 @@ dnsmasq --conf-file="$LEVEL_DIR/level3dnsmasq_fake2.conf" --pid-file=/run/level3
 
 sleep 1
 
+# Iniciar los clientes
 start_client level3-client1 wlan11 "$LEVEL_DIR/level3cli1.conf"
 start_client level3-client2 wlan12 "$LEVEL_DIR/level3cli2.conf"
 start_client level3-client3 wlan13 "$LEVEL_DIR/level3cli3.conf"
@@ -122,6 +135,7 @@ start_client level3-fake-client2 wlan18 "$LEVEL_DIR/level3fakecli2.conf"
 
 sleep 1
 
+# Comprobar la conectividad de los clientes a los puntos de acceso
 start_ping level3-client1 10.10.3.1 /run/level3-client1-ping.pid
 start_ping level3-client2 10.10.3.1 /run/level3-client2-ping.pid
 start_ping level3-client3 10.10.3.1 /run/level3-client3-ping.pid

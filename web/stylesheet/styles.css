@@ -1,3 +1,4 @@
+/* Variables visuales principales del portal. */
 :root {
     --bg: #0f172a;
     --panel: #111827;
@@ -14,11 +15,13 @@
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.30);
 }
 
+/* Normaliza el calculo de tamanos en todos los elementos. */
 * {
     box-sizing: border-box;
 }
 
 html,
+/* Fondo y tipografia base de la aplicacion. */
 body {
     min-height: 100%;
 }
@@ -80,6 +83,7 @@ kbd {
     color: #bfdbfe;
 }
 
+/* Contenedores principales y variantes de ancho. */
 .wrapper {
     max-width: 980px;
     margin: 0 auto;
@@ -94,6 +98,7 @@ kbd {
     max-width: 1320px;
 }
 
+/* Barra superior de navegacion y contexto. */
 .topbar {
     display: flex;
     justify-content: space-between;
@@ -111,6 +116,7 @@ kbd {
     color: var(--text);
 }
 
+/* Rejillas usadas para layouts de dos columnas. */
 .grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -121,6 +127,7 @@ kbd {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* Tarjetas base para paneles, formularios y bloques informativos. */
 .card {
     background: rgba(17, 24, 39, 0.95);
     border: 1px solid var(--border);
@@ -149,6 +156,7 @@ kbd {
     color: var(--muted);
 }
 
+/* Mensajes de estado: info, aviso, error y exito. */
 .message {
     margin-bottom: 18px;
     padding: 12px 14px;
@@ -184,6 +192,7 @@ kbd {
     border-radius: 10px;
 }
 
+/* Cajas de ayuda usadas en los niveles. */
 .helper-box {
     margin-top: 20px;
     padding: 16px 18px;
@@ -205,6 +214,7 @@ kbd {
     color: #bfdbfe;
 }
 
+/* Bloques de metadatos de objetivos y validaciones. */
 .meta {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -249,6 +259,7 @@ kbd {
     margin-top: 6px;
 }
 
+/* Formularios y campos de entrada. */
 form {
     margin-top: 18px;
 }
@@ -318,6 +329,7 @@ textarea::placeholder {
     color: #6b7280;
 }
 
+/* Grupos de acciones y botones. */
 .actions {
     display: flex;
     gap: 10px;
@@ -378,6 +390,7 @@ input[type="submit"]:hover {
     background: rgba(239, 68, 68, 0.22);
 }
 
+/* Tablas administrativas y leaderboard. */
 .table-wrap {
     margin-top: 18px;
     overflow-x: auto;
@@ -437,6 +450,7 @@ tbody tr:last-child td {
     background: rgba(15, 23, 42, 0.5);
 }
 
+/* Adaptacion de layouts a pantallas medianas. */
 @media (max-width: 900px) {
     .grid,
     .grid.equal,
@@ -445,6 +459,7 @@ tbody tr:last-child td {
     }
 }
 
+/* Ajustes para movil. */
 @media (max-width: 640px) {
     .wrapper {
         padding: 24px 16px;

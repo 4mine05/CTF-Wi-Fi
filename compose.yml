@@ -12,7 +12,7 @@ services:
       - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     networks:
       - ctf_net
-    # Check if the database is ready
+    # Comprobar si la base de datos esta lista antes de arrancar la web.
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-uroot", "-proot123"]
       interval: 5s
@@ -35,6 +35,7 @@ services:
     volumes:
       - ./web:/var/www/html:ro
     ports:
+    # Exponer la web en el puerto 8080
       - "8080:80"
     networks:
       - ctf_net

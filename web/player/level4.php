@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireLogin();
 
+// Solo jugadores autenticados pueden acceder a los niveles.
 if (($_SESSION['user']['role'] ?? '') !== 'player') {
     http_response_code(403);
     exit('Acceso solo para jugadores.');
@@ -18,6 +19,7 @@ if ($status !== 'approved') {
 $userId = (int)($_SESSION['user']['id'] ?? 0);
 $alias = (string)($_SESSION['user']['alias'] ?? 'jugador');
 
+// Configuracion de puntuacion y red objetivo heredada del nivel 3.
 $levelNumber = 4;
 $basePoints = 125;
 $hintPenalty = 10;
@@ -37,12 +39,14 @@ $hints = [
     3 => 'Realiza un ataque de fuerza bruta con aircrack-ng sobre la captura válida que hayas obtenido.',
 ];
 
+// Mensaje que se mostrara en la vista tras procesar acciones.
 $message = '';
 $messageType = 'info';
 
 /* Restringir acceso a niveles no desbloqueados */
 ensureLevelUnlocked($pdo, $userId, 4);
 
+// Asegura que existan filas base de puntuacion y progreso.
 $pdo->prepare("
     INSERT IGNORE INTO scores (user_id, points, levels_completed, hints_used, failed_attempts)
     VALUES (?, 0, 0, 0, 0)
@@ -87,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'use_hint') {
+        // Registra una pista usada tanto en el nivel como en el total del jugador.
         if ($hintsUsed < count($hints)) {
             $pdo->beginTransaction();
 
@@ -121,12 +126,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
     }
 
     if ($action === 'submit_psk') {
+        // Valida la PreSharedKey encontrada por el jugador.
         $submittedPsk = trim((string)($_POST['psk'] ?? ''));
 
         if ($submittedPsk === '') {
             $message = 'Debes introducir la PreSharedKey encontrada.';
             $messageType = 'error';
         } elseif (password_verify($submittedPsk, $flagHash)) {
+            // PSK correcta: calcula puntos finales y completa el nivel.
             $finalPoints = max(
                 0,
                 $basePoints - ($hintsUsed * $hintPenalty) - ($failedAttempts * $failedAttemptPenalty)
@@ -164,6 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
                 $messageType = 'error';
             }
         } else {
+            // PSK incorrecta: registra penalizacion por intento fallido.
             $pdo->beginTransaction();
 
             try {
@@ -218,12 +226,14 @@ $currentLevelPoints = max(
 );
 
 if ($completed && isset($_SESSION['level4_completed_message'])) {
+    // Mensaje de exito mostrado despues de redirigir al completar el nivel.
     $message = (string)$_SESSION['level4_completed_message'];
     $messageType = 'success';
     unset($_SESSION['level4_completed_message']);
 }
 
 if (isset($_GET['error']) && $_GET['error'] === 'flag') {
+    // Mensaje mostrado tras redirigir por una PSK incorrecta.
     $message = 'PreSharedKey incorrecta. Se ha aplicado una penalizacion.';
     $messageType = 'error';
 }

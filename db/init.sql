@@ -14,10 +14,11 @@ CREATE TABLE app_config (
         ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Valores por defecto
 INSERT INTO app_config (config_key, config_value) VALUES
 ('max_players', '20'),
 ('registration_open', '1'),
-('ssh_host', '192.168.220.10'),
+('ssh_host', 'localhost'),
 ('public_screen_enabled', '0');
 
 -- =========================================
@@ -51,6 +52,7 @@ CREATE TABLE invitation_codes (
     UNIQUE KEY uq_invitation_codes_code (code)
 );
 
+-- Codigo de invitacion 
 INSERT INTO invitation_codes (code, is_active, created_at)
 VALUES ('CLASE2026', 1, NOW());
 
@@ -145,7 +147,7 @@ CREATE TABLE scores (
 INSERT INTO users (alias, password_hash, role, status, approved_at)
 VALUES (
   'admin',
-  '$2y$12$bAFgGglV3m1UPbbkioGNreC6LzvrgAJlTsYjUkn8Y4nA/hb7prIIK',
+  '$2y$12$bAFgGglV3m1UPbbkioGNreC6LzvrgAJlTsYjUkn8Y4nA/hb7prIIK', -- Contraseña: admin1234
   'admin',
   'approved',
   NOW()

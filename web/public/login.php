@@ -6,6 +6,7 @@ require_once __DIR__ . '/../lib/bootstrap.php';
 $error = '';
 $success = '';
 
+// Recupera mensajes guardados en sesion tras redirecciones.
 if (isset($_SESSION['login_error'])) {
     $error = (string)$_SESSION['login_error'];
     unset($_SESSION['login_error']);
@@ -16,17 +17,21 @@ if (isset($_SESSION['login_success'])) {
     unset($_SESSION['login_success']);
 }
 
+// Si ya hay sesion activa, envia al usuario a su panel correspondiente.
 if (!empty($_SESSION['user']) && $error === '') {
     redirectByRole();
 }
 
+// Procesa el formulario de acceso.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $alias = trim($_POST['alias'] ?? '');
     $password = $_POST['password'] ?? '';
 
+    // Alias y contrasena son obligatorios para intentar autenticar.
     if ($alias === '' || $password === '') {
         $error = 'Debes rellenar alias y contraseña.';
     } else {
+        // Busca el usuario por alias para verificar la contrasena.
         $stmt = $pdo->prepare("
             SELECT id, alias, password_hash, role, status
             FROM users
@@ -41,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (in_array($user['status'], ['deleted'], true)) {
             $error = 'Tu cuenta no tiene acceso.';
         } else {
+            // Regenera la sesion tras el login correcto.
             session_regenerate_id(true);
 
             $_SESSION['user'] = [
@@ -50,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'status' => $user['status'],
             ];
 
+            // Guarda la fecha del ultimo acceso.
             $stmt = $pdo->prepare("
                 UPDATE users
                 SET last_login_at = NOW(), updated_at = NOW()
@@ -62,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Mantiene el alias escrito si el formulario falla.
 $submittedAlias = (string)($_POST['alias'] ?? '');
 ?>
 <!DOCTYPE html>

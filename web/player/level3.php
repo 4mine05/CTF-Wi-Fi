@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireLogin();
 
+// Solo jugadores autenticados pueden acceder a los niveles.
 if (($_SESSION['user']['role'] ?? '') !== 'player') {
     http_response_code(403);
     exit('Acceso solo para jugadores.');
@@ -21,6 +22,7 @@ $alias = (string)($_SESSION['user']['alias'] ?? 'jugador');
 /* Restringir acceso a niveles no desbloqueados */
 ensureLevelUnlocked($pdo, $userId, 3);
 
+// Configuracion de puntuacion, subida y red objetivo del nivel.
 $levelNumber = 3;
 $basePoints = 100;
 $hintPenalty = 10;
@@ -35,9 +37,11 @@ $hints = [
     3 => 'Recuerda que con sftp las opciones se definen antes de la conexión',
 ];
 
+// Mensaje que se mostrara en la vista tras procesar acciones.
 $message = '';
 $messageType = 'info';
 
+// Recupera mensajes temporales generados antes de una redireccion.
 if (isset($_SESSION['level3_flash']) && is_array($_SESSION['level3_flash'])) {
     $message = (string)($_SESSION['level3_flash']['message'] ?? '');
     $messageType = (string)($_SESSION['level3_flash']['type'] ?? 'info');
@@ -46,6 +50,7 @@ if (isset($_SESSION['level3_flash']) && is_array($_SESSION['level3_flash'])) {
 
 function setLevel3Flash(string $message, string $type): void
 {
+    // Guarda un mensaje para mostrarlo en la siguiente carga del nivel.
     $_SESSION['level3_flash'] = [
         'message' => $message,
         'type' => $type,
@@ -54,6 +59,7 @@ function setLevel3Flash(string $message, string $type): void
 
 function uploadErrorToMessage(int $error): string
 {
+    // Traduce codigos de error de subida PHP a mensajes para el jugador.
     switch ($error) {
         case UPLOAD_ERR_INI_SIZE:
         case UPLOAD_ERR_FORM_SIZE:
@@ -73,6 +79,7 @@ function uploadErrorToMessage(int $error): string
 
 function findAircrackBinary(): ?string
 {
+    // Busca aircrack-ng en rutas habituales o mediante command -v.
     $candidates = [
         '/usr/bin/aircrack-ng',
         '/usr/local/bin/aircrack-ng',
@@ -109,6 +116,7 @@ function normalizeSsid(string $ssid): string
 
 function validateHandshakeCapture(string $capturePath, string $expectedBssid, ?string $expectedSsid = null): array
 {
+    // Usa aircrack-ng para comprobar que la captura contiene el handshake esperado.
     if (!function_exists('shell_exec')) {
         return [
             'available' => false,
@@ -234,6 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'use_hint') {
+        // Registra una pista usada tanto en el nivel como en el total del jugador.
         if ($hintsUsed < count($hints)) {
             $pdo->beginTransaction();
 
@@ -268,6 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
     }
 
     if ($action === 'submit_capture') {
+        // Procesa la captura .cap enviada por el jugador.
         $uploadedCapture = $_FILES['capture_file'] ?? null;
 
         if (!is_array($uploadedCapture) || (int)($uploadedCapture['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
@@ -277,6 +287,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
             $message = uploadErrorToMessage((int)$uploadedCapture['error']);
             $messageType = 'error';
         } else {
+            // Valida extension, tamano y archivo temporal antes de analizarlo.
             $originalName = (string)($uploadedCapture['name'] ?? '');
             $tmpName = (string)($uploadedCapture['tmp_name'] ?? '');
             $extension = strtolower((string)pathinfo($originalName, PATHINFO_EXTENSION));
@@ -295,12 +306,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
                 $message = 'No se pudo verificar el archivo subido.';
                 $messageType = 'error';
             } else {
+                // Analiza la captura y decide si completa el nivel.
                 $validation = validateHandshakeCapture($tmpName, $targetBssid, $targetSsid);
 
                 if (!$validation['available']) {
                     $message = $validation['message'];
                     $messageType = 'error';
                 } elseif ($validation['ok']) {
+                    // Captura valida: calcula puntos y desbloquea el siguiente nivel.
                     $finalPoints = max(
                         0,
                         $basePoints - ($hintsUsed * $hintPenalty) - ($failedAttempts * $failedAttemptPenalty)
@@ -347,6 +360,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$completed) {
                         $messageType = 'error';
                     }
                 } else {
+                    // Captura invalida: registra penalizacion por intento fallido.
                     $pdo->beginTransaction();
 
                     try {

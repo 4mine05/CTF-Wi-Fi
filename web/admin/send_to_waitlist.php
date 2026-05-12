@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireAdmin();
 
+// Este endpoint solo acepta acciones enviadas desde formularios POST.
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     exit('Método no permitido.');
@@ -15,8 +16,10 @@ if ($userId <= 0) {
 }
 
 try {
+    // Mueve al jugador a espera junto con su entrada de waitlist.
     $pdo->beginTransaction();
 
+    // Bloquea el usuario para validar que sigue pendiente.
     $stmt = $pdo->prepare("
         SELECT id, alias, role, status
         FROM users
@@ -38,6 +41,7 @@ try {
         throw new RuntimeException('Solo se puede enviar a espera a usuarios pendientes de revisión.');
     }
 
+    // Cambia la cuenta a estado de lista de espera.
     $stmt = $pdo->prepare("
         UPDATE users
         SET status = 'waitlisted', updated_at = NOW()
@@ -45,6 +49,7 @@ try {
     ");
     $stmt->execute([$userId]);
 
+    // Crea o reactiva la entrada de lista de espera.
     $stmt = $pdo->prepare("
         INSERT INTO waitlist (user_id, joined_at, status)
         VALUES (?, NOW(), 'waiting')
@@ -61,6 +66,7 @@ try {
     header('Location: /admin/users.php');
     exit;
 } catch (Throwable $e) {
+    // Revierte el movimiento si falla cualquier parte.
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }

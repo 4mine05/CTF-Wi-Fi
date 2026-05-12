@@ -4,14 +4,17 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireAdmin();
 
+// Muestra la pantalla publica solo si esta activada en la configuracion.
 $publicScreenEnabled = getConfig($pdo, 'public_screen_enabled', '1');
 if ($publicScreenEnabled !== '1') {
     http_response_code(403);
     exit('La pantalla pública está desactivada.');
 }
 
+// Capacidad maxima configurada para el evento.
 $maxPlayers = getConfigInt($pdo, 'max_players', 30);
 
+// Cuenta plazas ocupadas o reservadas por usuarios pendientes y aprobados.
 $stmt = $pdo->query("
     SELECT COUNT(*)
     FROM users
@@ -21,6 +24,7 @@ $reservedSlots = (int)$stmt->fetchColumn();
 
 $freeSlots = max(0, $maxPlayers - $reservedSlots);
 
+// Cuenta los usuarios que siguen esperando plaza.
 $stmt = $pdo->query("
     SELECT COUNT(*)
     FROM waitlist
@@ -28,6 +32,7 @@ $stmt = $pdo->query("
 ");
 $waitlistCount = (int)$stmt->fetchColumn();
 
+// Muestra los primeros usuarios de la lista de espera.
 $stmt = $pdo->query("
     SELECT u.alias, w.joined_at
     FROM waitlist w
@@ -39,6 +44,7 @@ $stmt = $pdo->query("
 ");
 $waitlist = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Cuenta entornos de jugador ya creados o activos.
 $stmt = $pdo->query("
     SELECT COUNT(*)
     FROM player_envs
@@ -46,6 +52,7 @@ $stmt = $pdo->query("
 ");
 $activeEnvs = (int)$stmt->fetchColumn();
 
+// Obtiene el top de jugadores aprobados para el leaderboard.
 $stmt = $pdo->query("
     SELECT u.alias, s.points, s.levels_completed, s.hints_used
     FROM scores s
@@ -62,6 +69,7 @@ $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pantalla pública - CTF WiFi</title>
+    <!-- Refresca la vista para mostrar datos actualizados durante el evento. -->
     <meta http-equiv="refresh" content="3">
     <link rel="stylesheet" href="/stylesheet/styles.css">
 </head>

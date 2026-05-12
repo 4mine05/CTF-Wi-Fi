@@ -5,11 +5,13 @@ require_once __DIR__ . '/../lib/bootstrap.php';
 
 $error = '';
 
+// Procesa el formulario de registro.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $alias = trim($_POST['alias'] ?? '');
     $password = $_POST['password'] ?? '';
     $inviteCode = strtoupper(trim($_POST['invite_code'] ?? ''));
 
+    // Valida los datos basicos antes de tocar la base de datos.
     if (!preg_match('/^[A-Za-z0-9_-]{3,32}$/', $alias)) {
         $error = 'El alias debe tener entre 3 y 32 caracteres y solo usar letras, números, guion o guion bajo.';
     } elseif (strlen($password) < 8) {
@@ -18,13 +20,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Debes introducir un código de invitación.';
     } else {
         try {
+            // Agrupa el alta completa para evitar registros parciales.
             $pdo->beginTransaction();
 
+            // Comprueba que el registro sigue abierto.
             $registrationOpen = getConfig($pdo, 'registration_open', '1');
             if ($registrationOpen !== '1') {
                 throw new RuntimeException('El registro está cerrado.');
             }
 
+            // Bloquea el codigo de invitacion durante la transaccion.
             $stmt = $pdo->prepare("
                 SELECT id, is_active
                 FROM invitation_codes
@@ -42,20 +47,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('El código de invitación está desactivado.');
             }
 
+            // Evita duplicar alias de jugadores ya registrados.
             $stmt = $pdo->prepare("SELECT id FROM users WHERE alias = ? LIMIT 1");
             $stmt->execute([$alias]);
             if ($stmt->fetch()) {
                 throw new RuntimeException('Ese alias ya está en uso.');
             }
 
+            // Decide si el jugador entra a revision o a lista de espera.
             $maxPlayers = getConfigInt($pdo, 'max_players', 30);
             $reservedSlots = countReservedSlots($pdo);
 
             $status = ($reservedSlots < $maxPlayers) ? 'pending_review' : 'waitlisted';
 
+            // Genera hashes para el portal web y para el usuario Linux del contenedor.
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
             $containerPasswordHash = makeLinuxPasswordHash($password);
 
+            // Crea el usuario jugador con su estado inicial.
             $stmt = $pdo->prepare("
                 INSERT INTO users (alias, password_hash, container_password_hash, role, status, created_at, updated_at)
                 VALUES (?, ?, ?, 'player', ?, NOW(), NOW())
@@ -64,12 +73,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $userId = (int)$pdo->lastInsertId();
 
+            // Inicializa la puntuacion del nuevo jugador.
             $stmt = $pdo->prepare("
                 INSERT INTO scores (user_id, points, levels_completed, hints_used, failed_attempts)
                 VALUES (?, 0, 0, 0, 0)
             ");
             $stmt->execute([$userId]);
 
+            // Si no hay plazas, lo anade tambien a la lista de espera.
             if ($status === 'waitlisted') {
                 $stmt = $pdo->prepare("
                     INSERT INTO waitlist (user_id, joined_at, status)
@@ -80,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $pdo->commit();
 
+            // Guarda el resultado para mostrarlo despues de redirigir al login.
             if ($status === 'pending_review') {
                 $_SESSION['login_success'] = 'Registro enviado correctamente. Tu cuenta está pendiente de revisión por el administrador.';
             } else {
@@ -89,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: /public/login.php');
             exit;
         } catch (Throwable $e) {
+            // Revierte cualquier cambio si falla una parte del registro.
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
@@ -97,6 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Mantiene valores escritos si el formulario falla.
 $submittedAlias = (string)($_POST['alias'] ?? '');
 $submittedInviteCode = (string)($_POST['invite_code'] ?? '');
 ?>

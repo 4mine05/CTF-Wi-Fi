@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
+# Menu principal de administracion del laboratorio CTF Wi-Fi.
 set -uo pipefail
 
+# Asegura que comandos del sistema esten disponibles aunque sudo limpie el PATH.
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
+# Rutas base del repositorio y de los scripts auxiliares.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPTS_DIR="$REPO_ROOT/scripts"
 
+# Configuracion comun de Docker, BBDD e imagen de jugadores.
 DB_CONTAINER="ctf_db"
 DB_NAME="ctf_wifi"
 DB_ROOT_PASS="root123"
@@ -13,12 +17,14 @@ PLAYER_IMAGE="ctf-player-base:1.0"
 DEFAULT_SSH_HOST="192.168.220.10"
 
 clear
+# El menu necesita permisos de root para Docker, redes y scripts Wi-Fi.
 if [ "${EUID:-$(id -u)}" -ne 0 ]; then
     echo "[ERROR] Ejecuta este menu con sudo o como root:"
     echo "        sudo bash ctf.sh"
     exit 1
 fi
 
+# Localiza el binario de Docker antes de ejecutar acciones.
 DOCKER_BIN="$(command -v docker || true)"
 if [ -z "$DOCKER_BIN" ]; then
     echo "[ERROR] No se encontro docker en PATH."
@@ -27,20 +33,24 @@ fi
 
 cd "$REPO_ROOT" || exit 1
 
+# Pausa la salida para que el operador pueda leer el resultado.
 pause() {
     local _
     echo ""
     read -r -p "Pulsa Enter para continuar..." _
 }
 
+# Escapa comillas simples para insertar valores en SQL.
 sql_escape() {
     printf "%s" "$1" | sed "s/'/''/g"
 }
 
+# Elimina espacios al principio y final de una cadena.
 trim() {
     printf "%s" "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
 }
 
+# Usa docker compose moderno o docker-compose clasico si es necesario.
 docker_compose() {
     if "$DOCKER_BIN" compose version >/dev/null 2>&1; then
         "$DOCKER_BIN" compose "$@"
@@ -56,10 +66,12 @@ docker_compose() {
     return 1
 }
 
+# Comprueba si el contenedor de BBDD esta en ejecucion.
 db_container_running() {
     "$DOCKER_BIN" ps --format '{{.Names}}' | grep -qx "$DB_CONTAINER"
 }
 
+# Evita ejecutar acciones que necesitan BBDD si MariaDB no esta lista.
 require_db() {
     if ! db_container_running; then
         echo "[ERROR] La BBDD no esta arrancada: $DB_CONTAINER"
@@ -68,6 +80,7 @@ require_db() {
     fi
 }
 
+# Ejecuta una consulta SQL dentro del contenedor MariaDB.
 db_query() {
     local sql="$1"
     "$DOCKER_BIN" exec "$DB_CONTAINER" mariadb \
@@ -79,6 +92,7 @@ db_query() {
         -Nse "$sql"
 }
 
+# Espera a que MariaDB acepte conexiones antes de seguir.
 wait_for_db() {
     local attempt
 
@@ -95,6 +109,7 @@ wait_for_db() {
     return 1
 }
 
+# Crea el valor ssh_host por defecto si aun no existe en app_config.
 ensure_ssh_host_config() {
     local current esc_default
 
@@ -123,6 +138,7 @@ get_ssh_host() {
     db_query "SELECT config_value FROM app_config WHERE config_key = 'ssh_host' LIMIT 1;"
 }
 
+# Valida y guarda el dominio/IP que veran los jugadores para SSH.
 set_ssh_host() {
     local host="$1"
     local esc_host
@@ -156,6 +172,7 @@ set_ssh_host() {
     echo "[OK] Host SSH actualizado: $host"
 }
 
+# Permite revisar o cambiar el host SSH publicado.
 configure_ssh_host() {
     local current new_host
 
@@ -172,6 +189,7 @@ configure_ssh_host() {
     set_ssh_host "$new_host"
 }
 
+# Muestra todos los codigos de invitacion activos.
 show_invitation_code() {
     local rows
 
@@ -196,6 +214,7 @@ show_invitation_code() {
     done
 }
 
+# Desactiva codigos anteriores y crea un nuevo codigo activo.
 change_invitation_code() {
     local raw_code code esc_code
 
@@ -229,6 +248,7 @@ change_invitation_code() {
     echo "[OK] Codigo de invitacion activo: $code"
 }
 
+# Ejecuta un script del directorio scripts con comprobacion previa.
 run_script() {
     local script_name="$1"
     shift
@@ -243,21 +263,25 @@ run_script() {
     bash "$script_path" "$@"
 }
 
+# Construye la imagen base usada por los contenedores de jugadores.
 build_player_image() {
     echo "[+] Construyendo imagen base de jugadores: $PLAYER_IMAGE"
     "$DOCKER_BIN" build -t "$PLAYER_IMAGE" -f Build/Dockerfile .
 }
 
+# Levanta web y BBDD con Docker Compose.
 compose_up() {
     echo "[+] Levantando web y BBDD con docker compose..."
     docker_compose up -d --build
 }
 
+# Limpia procesos, pidfiles y namespaces de niveles anteriores.
 cleanup_levels() {
     echo "[+] Limpiando niveles..."
     run_script "cleanup_levels.sh"
 }
 
+# Flujo completo para preparar jugadores aprobados y redes Wi-Fi.
 start_or_restart_levels_and_players() {
     require_db || return 1
     wait_for_db || return 1
@@ -271,12 +295,14 @@ start_or_restart_levels_and_players() {
     echo "[OK] Niveles iniciados/reiniciados y jugadores aprobados aprovisionados."
 }
 
+# Arranca los niveles Wi-Fi disponibles.
 start_levels() {
     echo "[+] Iniciando niveles..."
     run_script "start_level1.sh" || return 1
     run_script "start_level3.sh" || return 1
 }
 
+# Arranca web/BBDD y deja configurado el host SSH publicado.
 start_web_db() {
     local web_host
 
@@ -291,6 +317,7 @@ start_web_db() {
     echo "     Cuando apruebes jugadores, usa la opcion 5 para iniciar niveles y entornos de jugadores."
 }
 
+# Borra contenedores player-* existentes.
 delete_player_containers() {
     local containers=()
 
@@ -305,6 +332,7 @@ delete_player_containers() {
     "$DOCKER_BIN" rm -f "${containers[@]}" || return 1
 }
 
+# Para contenedores player-* que esten en ejecucion.
 stop_player_containers() {
     local containers=()
 
@@ -319,6 +347,7 @@ stop_player_containers() {
     "$DOCKER_BIN" stop "${containers[@]}"
 }
 
+# Reinicia el laboratorio desde cero tras confirmacion explicita.
 reset_lab() {
     local confirmation
 
@@ -342,6 +371,7 @@ reset_lab() {
     start_web_db
 }
 
+# Detiene servicios y elimina contenedores/volumenes del laboratorio.
 stop_all() {
     delete_player_containers || return 1
 
@@ -354,6 +384,7 @@ stop_all() {
     echo "[OK] Todo parado. Contenedores de jugadores borrados y volumen de BBDD eliminado."
 }
 
+# Muestra estado de Docker, jugadores y entornos registrados en BBDD.
 show_status() {
     echo "[+] Estado docker compose:"
     docker_compose ps || return 1
@@ -381,6 +412,7 @@ show_status() {
     fi
 }
 
+# Ejecuta una accion del menu y muestra pausa final.
 run_action() {
     local action="$1"
     shift
@@ -397,6 +429,7 @@ run_action() {
     pause
 }
 
+# Imprime las opciones disponibles del menu interactivo.
 print_menu() {
     echo ""
     echo "=== Admin CTF Wi-Fi ==="
@@ -413,6 +446,7 @@ print_menu() {
     echo ""
 }
 
+# Bucle principal del menu.
 main() {
     local option
 
