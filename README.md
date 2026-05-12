@@ -28,6 +28,7 @@ Entornos probados:
 
 | Sistema | Version |
 | --- | --- |
+| MAdridlinux(MAX) *Basado en ubuntu 22.04* | 12.5 |
 | Ubuntu | 24.04 LTS |
 | Ubuntu | 25.10 |
 | Ubuntu | 26.04 LTS |
